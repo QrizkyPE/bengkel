@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ServiceRequestController extends Controller
 {
@@ -84,5 +86,27 @@ class ServiceRequestController extends Controller
     {
         $request->delete();
         return redirect()->route('requests.index')->with('success', 'Permintaan dihapus.');
+    }
+
+    public function generatePDF()
+    {
+        try {
+            $requests = ServiceRequest::where('user_id', Auth::id())->get();
+            
+            if ($requests->isEmpty()) {
+                return back()->with('error', 'No data available for PDF generation');
+            }
+            
+            $pdf = PDF::loadView('requests.pdf', compact('requests'));
+            return $pdf->download('work-order.pdf');
+            
+        } catch (\Exception $e) {
+            \Log::error('PDF Generation failed:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Failed to generate PDF: ' . $e->getMessage());
+        }
     }
 }

@@ -7,7 +7,12 @@
             <h1>Daftar Permintaan Sparepart</h1>
         </div>
         <div class="col text-end">
-            <a href="{{ route('requests.create') }}" class="btn btn-primary">Buat Permintaan</a>
+            <a href="{{ route('requests.download.pdf') }}" class="btn btn-secondary me-2">
+                <i class="fas fa-file-pdf"></i> Download PDF
+            </a>
+            <a href="{{ route('requests.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Buat Permintaan
+            </a>
         </div>
     </div>
 
@@ -18,38 +23,94 @@
     </div>
     @endif
 
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Nama Sparepart</th>
-                <th>Jumlah</th>
-                <th>Kebutuhan Part</th>
-                <th>Keterangan</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($requests as $index => $request)
-            <tr>
-                <td>{{ $loop->iteration }}</td>
-                <td>{{ $request->sparepart_name }}</td>
-                <td>{{ $request->quantity }}</td>
-                <td>{{ $request->kebutuhan_part ?? '-' }}</td>
-                <td>{{ $request->keterangan ?? '-' }}</td>
-                <td>
-                    <a href="{{ route('requests.edit', $request) }}" class="btn btn-sm btn-warning">Edit</a>
-                    <form action="{{ route('requests.destroy', $request) }}" method="POST" class="d-inline delete-form">
-                        @csrf 
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th style="width: 5%">No</th>
+                    <th style="width: 20%">Nama Sparepart</th>
+                    <th style="width: 10%">Jumlah</th>
+                    <th style="width: 25%">Kebutuhan Part</th>
+                    <th style="width: 25%">Keterangan</th>
+                    <th style="width: 15%">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($requests as $index => $request)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $request->sparepart_name }}</td>
+                    <td class="text-center">{{ $request->quantity }}</td>
+                    <td style="white-space: pre-wrap; word-wrap: break-word; min-width: 150px;">
+                        {{ $request->kebutuhan_part ?? '-' }}
+                    </td>
+                    <td style="white-space: pre-wrap; word-wrap: break-word; min-width: 150px;">
+                        {{ $request->keterangan ?? '-' }}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('requests.edit', $request) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form action="{{ route('requests.destroy', $request) }}" method="POST" class="delete-form">
+                                @csrf 
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
+
+@push('styles')
+<style>
+    .table-responsive {
+        margin-top: 1rem;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        vertical-align: middle;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        min-width: 80px;
+    }
+
+    /* Remove the old btn-group styles and delete-form margin */
+    .d-flex.gap-2 {
+        display: flex;
+        gap: 0.5rem !important;
+        justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+        .table td, .table th {
+            min-width: 100px;
+        }
+        
+        td:nth-child(4), td:nth-child(5) {
+            max-width: 200px;
+        }
+
+        .d-flex.gap-2 {
+            flex-direction: column;
+            gap: 0.25rem !important;
+        }
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script>
