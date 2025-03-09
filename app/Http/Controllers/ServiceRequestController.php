@@ -23,22 +23,20 @@ class ServiceRequestController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'sparepart_name' => 'required|string',
             'quantity' => 'required|integer|min:1',
+            'satuan' => 'required|string',
             'kebutuhan_part' => 'nullable|string',
             'keterangan' => 'nullable|string',
         ]);
 
-        ServiceRequest::create([
-            'user_id' => Auth::id(),
-            'sparepart_name' => $request->sparepart_name,
-            'quantity' => $request->quantity,
-            'kebutuhan_part' => $request->kebutuhan_part,
-            'keterangan' => $request->keterangan,
-        ]);
+        $validatedData['user_id'] = auth()->id();
 
-        return redirect()->route('requests.index')->with('success', 'Permintaan sparepart berhasil ditambahkan.');
+        ServiceRequest::create($validatedData);
+
+        return redirect()->route('requests.index')
+            ->with('success', 'Permintaan sparepart berhasil dibuat.');
     }
 
     public function show(ServiceRequest $request)
@@ -56,30 +54,18 @@ class ServiceRequestController extends Controller
     {
         $serviceRequest = ServiceRequest::findOrFail($id);
         
-        // Add logging to debug
-        \Log::info('Update method - Input:', $request->all());
-        \Log::info('Update method - ServiceRequest before:', $serviceRequest->toArray());
-
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'sparepart_name' => 'required|string',
             'quantity' => 'required|integer|min:1',
+            'satuan' => 'required|string',
             'kebutuhan_part' => 'nullable|string',
             'keterangan' => 'nullable|string',
         ]);
 
-        // Keep the existing user_id and update other fields
-        $result = $serviceRequest->update([
-            'user_id' => $serviceRequest->user_id, // Preserve the existing user_id
-            'sparepart_name' => $validated['sparepart_name'],
-            'quantity' => $validated['quantity'],
-            'kebutuhan_part' => $validated['kebutuhan_part'] ?? null,
-            'keterangan' => $validated['keterangan'] ?? null,
-        ]);
+        $serviceRequest->update($validatedData);
 
-        \Log::info('Update method - Update result:', ['success' => $result]);
-        \Log::info('Update method - ServiceRequest after:', $serviceRequest->fresh()->toArray());
-
-        return redirect()->route('requests.index')->with('success', 'Permintaan berhasil diperbarui.');
+        return redirect()->route('requests.index')
+            ->with('success', 'Permintaan sparepart berhasil diperbarui.');
     }
 
     public function destroy(ServiceRequest $request)

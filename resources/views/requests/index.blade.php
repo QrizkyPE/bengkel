@@ -26,27 +26,23 @@
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead>
-                <tr>
+                <tr style="text-align: center">
                     <th style="width: 5%">No</th>
-                    <th style="width: 20%">Nama Sparepart</th>
-                    <th style="width: 10%">Jumlah</th>
-                    <th style="width: 25%">Kebutuhan Part</th>
-                    <th style="width: 25%">Keterangan</th>
+                    <th style="width: 20%">ITEM PEKERJAAN</th>
+                    <th style="width: 10%">QTY</th>
+                    <th style="width: 25%">KEBUTUHAN PART DAN BAHAN</th>
+                    <th style="width: 25%">KET</th>
                     <th style="width: 15%">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($requests as $index => $request)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $request->sparepart_name }}</td>
-                    <td class="text-center">{{ $request->quantity }}</td>
-                    <td style="white-space: pre-wrap; word-wrap: break-word; min-width: 150px;">
-                        {{ $request->kebutuhan_part ?? '-' }}
-                    </td>
-                    <td style="white-space: pre-wrap; word-wrap: break-word; min-width: 150px;">
-                        {{ $request->keterangan ?? '-' }}
-                    </td>
+                    <td style="text-align: center;">{{ $loop->iteration }}</td>
+                    <td>{{ $request->sparepart_name }} </td>
+                    <td class="text-center">{{ $request->quantity }} {{ $request->satuan }}</td>
+                    <td style="text-align: left;">{{ $request->kebutuhan_part ?? '' }}</td>
+                    <td style="text-align: left;">{{ $request->keterangan ?? '' }}</td>
                     <td>
                         <div class="d-flex gap-2">
                             <a href="{{ route('requests.edit', $request) }}" class="btn btn-sm btn-warning">
@@ -77,22 +73,28 @@
     .table th {
         background-color: #f8f9fa;
         vertical-align: middle;
+        text-align: center;
     }
 
     .table td {
         vertical-align: middle;
     }
 
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        min-width: 80px;
+    /* Simplified column styling */
+    .table td:nth-child(4),
+    .table td:nth-child(5) {
+        text-align: left;
     }
 
-    /* Remove the old btn-group styles and delete-form margin */
     .d-flex.gap-2 {
         display: flex;
         gap: 0.5rem !important;
         justify-content: center;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        min-width: 80px;
     }
 
     @media (max-width: 768px) {

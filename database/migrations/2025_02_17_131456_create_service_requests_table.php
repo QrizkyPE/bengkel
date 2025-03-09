@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('user_id');
             $table->string('sparepart_name');
             $table->integer('quantity');
+            $table->string('satuan'); //
             $table->string('kebutuhan_part')->nullable();
             $table->text('keterangan')->nullable();
             $table->timestamps();

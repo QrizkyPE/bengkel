@@ -40,6 +40,19 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="satuan" class="form-label">Satuan</label>
+                            <input type="text" 
+                                class="form-control @error('satuan') is-invalid @enderror" 
+                                id="satuan" 
+                                name="satuan" 
+                                value="{{ old('satuan') }}" 
+                                required>
+                            @error('satuan')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
                             <label for="kebutuhan_part" class="form-label">Kebutuhan Part (Opsional)</label>
                             <input type="text" 
                                 class="form-control @error('kebutuhan_part') is-invalid @enderror" 

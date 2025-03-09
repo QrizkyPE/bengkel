@@ -15,6 +15,7 @@ class ServiceRequest extends Model
         'user_id',       
         'sparepart_name',
         'quantity',
+        'satuan', //
         'kebutuhan_part',
         'keterangan',
     ];
