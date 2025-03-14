@@ -33,12 +33,39 @@ class WorkOrderController extends Controller
         
         $workOrder = WorkOrder::create($validatedData);
 
-        return redirect()->route('requests.create', ['work_order' => $workOrder->id])
+        return redirect()->route('requests.index')
             ->with('success', 'Work Order berhasil dibuat.');
     }
 
     public function show(WorkOrder $workOrder)
     {
         return view('work_orders.show', compact('workOrder'));
+    }
+
+    public function index()
+    {
+        $workOrders = WorkOrder::where('user_id', Auth::id())
+            ->withCount('serviceRequests')
+            ->get();
+        
+        return view('work_orders.index', compact('workOrders'));
+    }
+
+    public function destroy(WorkOrder $workOrder)
+    {
+        // Check if user owns this work order
+        if ($workOrder->user_id !== Auth::id()) {
+            return redirect()->route('requests.index')
+                ->with('error', 'Anda tidak memiliki akses untuk menghapus work order ini.');
+        }
+        
+        // Delete associated service requests first
+        $workOrder->serviceRequests()->delete();
+        
+        // Then delete the work order
+        $workOrder->delete();
+        
+        return redirect()->route('requests.index')
+            ->with('success', 'Work Order berhasil dihapus.');
     }
 } 

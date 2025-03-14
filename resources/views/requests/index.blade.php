@@ -7,12 +7,6 @@
             <h1>Daftar Work Order & Permintaan Sparepart</h1>
         </div>
         <div class="col text-end">
-            <button type="button" class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#pdfModal">
-                <i class="fas fa-file-pdf"></i> Download PDF
-            </button>
-            <a href="{{ route('requests.create') }}" class="btn btn-success me-2">
-                <i class="fas fa-plus"></i> Buat Permintaan
-            </a>
             <a href="{{ route('work_orders.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Buat Work Order
             </a>
@@ -26,6 +20,14 @@
     </div>
     @endif
 
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
+    <!-- Display Work Orders with Requests -->
     @forelse($requests->groupBy('work_order_id') as $workOrderId => $workOrderRequests)
         @if($workOrderId && $workOrderRequests->first()->workOrder)
             <div class="card mb-4">
@@ -35,9 +37,25 @@
                             <h5 class="mb-0">Work Order #{{ $workOrderRequests->first()->workOrder->no_spk }}</h5>
                         </div>
                         <div class="col-md-4 text-md-end">
-                            <a href="{{ route('requests.create', ['work_order' => $workOrderId]) }}" class="btn btn-success btn-sm">
-                                <i class="fas fa-plus"></i> Tambah Sparepart
-                            </a>
+                            <div class="d-flex justify-content-end">
+                                <a href="{{ route('requests.create', ['work_order' => $workOrderId]) }}" class="btn btn-success btn-sm me-2">
+                                    <i class="fas fa-plus"></i> Tambah Sparepart
+                                </a>
+                                <form action="{{ route('requests.generatePDF') }}" method="POST" class="d-inline me-2">
+                                    @csrf
+                                    <input type="hidden" name="work_order_id" value="{{ $workOrderId }}">
+                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </button>
+                                </form>
+                                <form action="{{ route('work_orders.destroy', $workOrderRequests->first()->workOrder->id) }}" method="POST" class="delete-work-order-form">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i> Hapus WO
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -96,100 +114,65 @@
                     </div>
                 </div>
             </div>
-        @else
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">Permintaan Tanpa Work Order</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped">
-                            <thead>
-                                <tr style="text-align: center">
-                                    <th style="width: 5%">No</th>
-                                    <th style="width: 20%">ITEM PEKERJAAN</th>
-                                    <th style="width: 10%">QTY</th>
-                                    <th style="width: 25%">KEBUTUHAN PART DAN BAHAN</th>
-                                    <th style="width: 25%">KET</th>
-                                    <th style="width: 15%">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($workOrderRequests as $index => $request)
-                                <tr>
-                                    <td style="text-align: center;">{{ $loop->iteration }}</td>
-                                    <td>{{ $request->sparepart_name }}</td>
-                                    <td class="text-center">{{ $request->quantity }} {{ $request->satuan }}</td>
-                                    <td style="text-align: left;">{{ $request->kebutuhan_part ?? '' }}</td>
-                                    <td style="text-align: left;">{{ $request->keterangan ?? '' }}</td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <a href="{{ route('requests.edit', $request) }}" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                            <form action="{{ route('requests.destroy', $request) }}" method="POST" class="delete-form">
-                                                @csrf 
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">
-                                                    <i class="fas fa-trash"></i> Hapus
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         @endif
     @empty
-        <div class="alert alert-info">
-            Belum ada permintaan sparepart. Silakan buat Work Order terlebih dahulu.
-        </div>
-    @endforelse
-
-    <!-- Modal for PDF -->
-    <div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="pdfModalLabel">Enter Work Order Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- If no requests with work orders, check if we have any work orders -->
+        @if(isset($workOrders) && $workOrders->isNotEmpty())
+            @foreach($workOrders as $workOrder)
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-0">Work Order #{{ $workOrder->no_spk }}</h5>
+                            </div>
+                            <div class="col-md-4 text-md-end">
+                                <div class="d-flex justify-content-end">
+                                    <a href="{{ route('requests.create', ['work_order' => $workOrder->id]) }}" class="btn btn-success btn-sm me-2">
+                                        <i class="fas fa-plus"></i> Tambah Sparepart
+                                    </a>
+                                    <form action="{{ route('requests.generatePDF') }}" method="POST" class="d-inline me-2">
+                                        @csrf
+                                        <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                                        <button type="submit" class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('work_orders.destroy', $workOrder->id) }}" method="POST" class="delete-work-order-form">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i> Hapus WO
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>No. Polisi:</strong> {{ $workOrder->no_polisi }}</p>
+                                <p class="mb-1"><strong>Kilometer:</strong> {{ $workOrder->kilometer }}</p>
+                                <p class="mb-1"><strong>Type Kendaraan:</strong> {{ $workOrder->type_kendaraan }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Customer:</strong> {{ $workOrder->customer_name }}</p>
+                                <p class="mb-1"><strong>Tanggal:</strong> {{ $workOrder->created_at->format('d/m/Y') }}</p>
+                                <p class="mb-1"><strong>Keluhan:</strong> {{ $workOrder->keluhan ?? '-' }}</p>
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            Belum ada permintaan sparepart untuk work order ini.
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <form action="{{ route('requests.generatePDF') }}" method="POST" id="pdfForm">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="no_polisi" class="form-label">No. Polisi</label>
-                            <input type="text" class="form-control" id="no_polisi" name="no_polisi" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="kilometer" class="form-label">Kilometer</label>
-                            <input type="number" class="form-control" id="kilometer" name="kilometer" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="no_spk" class="form-label">No. SPK</label>
-                            <input type="text" class="form-control" id="no_spk" name="no_spk" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="type_kendaraan" class="form-label">Type Kendaraan</label>
-                            <input type="text" class="form-control" id="type_kendaraan" name="type_kendaraan" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="keluhan" class="form-label">Keluhan</label>
-                            <textarea class="form-control" id="keluhan" name="keluhan" rows="3"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" form="pdfForm" class="btn btn-primary">Generate PDF</button>
-                </div>
+            @endforeach
+        @else
+            <div class="alert alert-info">
+                Belum ada work order atau permintaan sparepart.
             </div>
-        </div>
-    </div>
+        @endif
+    @endforelse
 </div>
 
 @push('styles')
@@ -242,6 +225,15 @@
             gap: 0.25rem !important;
         }
     }
+
+    .delete-work-order-form {
+        display: inline-block !important;
+    }
+    
+    .card-header .btn-sm {
+        margin-bottom: 5px;
+        display: inline-block;
+    }
 </style>
 @endpush
 
@@ -254,6 +246,17 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 if (confirm('Apakah Anda yakin ingin menghapus permintaan ini?')) {
+                    this.submit();
+                }
+            });
+        });
+
+        // Add confirmation dialog for delete work order buttons
+        const deleteWorkOrderForms = document.querySelectorAll('.delete-work-order-form');
+        deleteWorkOrderForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (confirm('Apakah Anda yakin ingin menghapus work order ini? Semua permintaan sparepart terkait juga akan dihapus.')) {
                     this.submit();
                 }
             });

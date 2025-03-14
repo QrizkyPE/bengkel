@@ -7,13 +7,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\WorkOrder;
 
 class ServiceRequestController extends Controller
 {
     public function index()
     {
-        $requests = ServiceRequest::where('user_id', Auth::id())->get();
-        return view('requests.index', compact('requests'));
+        // Load requests with their work orders
+        $requests = ServiceRequest::with('workOrder')
+            ->where('user_id', Auth::id())
+            ->get();
+        
+        // If you have no requests with work orders, let's also load all work orders
+        $workOrders = WorkOrder::where('user_id', Auth::id())->get();
+        
+        return view('requests.index', compact('requests', 'workOrders'));
     }
 
     public function create()
@@ -24,17 +32,12 @@ class ServiceRequestController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'work_order_id' => 'required|exists:work_orders,id',
             'sparepart_name' => 'required|string',
             'quantity' => 'required|integer|min:1',
             'satuan' => 'required|string',
             'kebutuhan_part' => 'nullable|string',
             'keterangan' => 'nullable|string',
-            'no_polisi' => 'required|string',
-            'kilometer' => 'required|integer',
-            'no_spk' => 'required|string',
-            'type_kendaraan' => 'required|string',
-            'keluhan' => 'nullable|string',
+            'work_order_id' => 'nullable|exists:work_orders,id',
         ]);
 
         $validatedData['user_id'] = auth()->id();
@@ -42,9 +45,8 @@ class ServiceRequestController extends Controller
         // Create the service request
         ServiceRequest::create($validatedData);
 
-        // Redirect to generate PDF with the work order data
-        return redirect()->route('requests.generatePDF', $validatedData)
-            ->with('success', 'Permintaan sparepart berhasil dibuat dan PDF dihasilkan.');
+        return redirect()->route('requests.index')
+            ->with('success', 'Permintaan sparepart berhasil dibuat.');
     }
 
     public function show(ServiceRequest $request)
@@ -85,25 +87,35 @@ class ServiceRequestController extends Controller
     public function generatePDF(Request $request)
     {
         try {
-            // Retrieve the requests for the authenticated user
-            $requests = ServiceRequest::where('user_id', Auth::id())->get();
+            // Get the work order ID from the request
+            $workOrderId = $request->input('work_order_id');
             
-            // Check if there are any requests
-            if ($requests->isEmpty()) {
-                return back()->with('error', 'No data available for PDF generation');
+            if (!$workOrderId) {
+                return back()->with('error', 'Work Order ID is required');
             }
-
-            // Get the work order data from the request parameters
+            
+            // Get the work order
+            $workOrder = \App\Models\WorkOrder::findOrFail($workOrderId);
+            
+            // Get all service requests for this work order
+            $requests = ServiceRequest::where('work_order_id', $workOrderId)->get();
+            
+            if ($requests->isEmpty()) {
+                $requests = collect(); // Empty collection if no requests
+            }
+            
+            // Pass the work order data and requests to the PDF view
             $data = [
                 'requests' => $requests,
-                'no_polisi' => $request->input('no_polisi'),
-                'kilometer' => $request->input('kilometer'),
-                'no_spk' => $request->input('no_spk'),
-                'type_kendaraan' => $request->input('type_kendaraan'),
-                'keluhan' => $request->input('keluhan'),
+                'no_polisi' => $workOrder->no_polisi,
+                'kilometer' => $workOrder->kilometer,
+                'no_spk' => $workOrder->no_spk,
+                'type_kendaraan' => $workOrder->type_kendaraan,
+                'keluhan' => $workOrder->keluhan,
             ];
-
+            
             $pdf = PDF::loadView('requests.pdf', $data);
+            
             return $pdf->download('work-order.pdf');
             
         } catch (\Exception $e) {

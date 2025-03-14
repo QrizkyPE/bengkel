@@ -97,3 +97,10 @@ Route::get('/debug', function() {
 
 Route::post('/requests/pdf', [ServiceRequestController::class, 'generatePDF'])->name('requests.generatePDF');
 
+Route::delete('/work_orders/{workOrder}', [WorkOrderController::class, 'destroy'])->name('work_orders.destroy');
+
+Route::resource('work_orders', WorkOrderController::class);
+
+// Add this new route for GET requests
+Route::get('/requests/pdf/{work_order_id}', [ServiceRequestController::class, 'generatePDF'])->name('requests.generatePDF.get');
+

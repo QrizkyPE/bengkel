@@ -12,6 +12,10 @@
                     <form action="{{ route('requests.store') }}" method="POST">
                         @csrf
                         
+                        @if(request()->has('work_order'))
+                            <input type="hidden" name="work_order_id" value="{{ request('work_order') }}">
+                        @endif
+                        
                         <div class="mb-3">
                             <label for="sparepart_name" class="form-label">Nama Sparepart</label>
                             <input type="text" 
