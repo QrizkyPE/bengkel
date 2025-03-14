@@ -36,7 +36,6 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
-        $this->middleware('auth')->only('logout');
     }
 
     protected function authenticated(Request $request, $user)
@@ -45,7 +44,6 @@ class LoginController extends Controller
             return redirect()->route('requests.index');
         }
         
-        // Default redirect for other roles
         return redirect('/home');
     }
 }

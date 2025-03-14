@@ -8,10 +8,11 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EstimationController;
 use App\Http\Controllers\InvoiceController; 
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\WorkOrderController;
 use App\Http\Middleware\CheckRole;
 
-// Authentication routes
-Auth::routes();
+// Authentication routes - keep these at the top
+Auth::routes(['register' => false]); // Disable registration if not needed
 
 // Basic routes
 Route::get('/', function () {
@@ -20,42 +21,79 @@ Route::get('/', function () {
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+// Debug route
+Route::get('/debug', function() {
+    dd([
+        'logged_in' => Auth::check(),
+        'user' => Auth::user(),
+        'session' => session()->all()
+    ]);
+});
+
 // Protected routes
 Route::middleware(['auth'])->group(function () {
-    
+    // Service routes
+    Route::group(['middleware' => CheckRole::class . ':service', 'prefix' => 'service'], function() {
+        // Work Orders
+        Route::controller(WorkOrderController::class)->group(function () {
+            Route::get('/work_orders', 'index')->name('work_orders.index');
+            Route::get('/work_orders/create', 'create')->name('work_orders.create');
+            Route::post('/work_orders', 'store')->name('work_orders.store');
+            Route::get('/work_orders/{workOrder}/edit', 'edit')->name('work_orders.edit');
+            Route::put('/work_orders/{workOrder}', 'update')->name('work_orders.update');
+            Route::delete('/work_orders/{workOrder}', 'destroy')->name('work_orders.destroy');
+        });
+
+        // Service Requests
+        Route::controller(ServiceRequestController::class)->group(function () {
+            Route::get('/requests', 'index')->name('requests.index');
+            Route::get('/requests/create', 'create')->name('requests.create');
+            Route::post('/requests', 'store')->name('requests.store');
+            Route::get('/requests/{request}/edit', 'edit')->name('requests.edit');
+            Route::put('/requests/{request}', 'update')->name('requests.update');
+            Route::delete('/requests/{request}', 'destroy')->name('requests.destroy');
+            Route::get('/requests/download-pdf', 'generatePDF')->name('requests.download.pdf');
+        });
+    });
+
     // Admin routes
-    Route::middleware(['role:admin'])->group(function () {
+    Route::group(['middleware' => CheckRole::class . ':admin', 'prefix' => 'admin'], function() {
         Route::resource('users', UserController::class);
     });
 
-    // Service routes
-    Route::middleware(['auth', CheckRole::class . ':service'])->group(function () {
-        Route::get('/requests/download-pdf', [ServiceRequestController::class, 'generatePDF'])->name('requests.download.pdf');
-        Route::resource('requests', ServiceRequestController::class)->except(['show']);
-    });
-
     // Estimator routes
-    Route::middleware(['role:estimator'])->group(function () {
+    Route::group(['middleware' => CheckRole::class . ':estimator', 'prefix' => 'estimator'], function() {
         Route::resource('estimations', EstimationController::class);
     });
 
     // Billing routes
-    Route::middleware(['role:billing'])->group(function () {
+    Route::group(['middleware' => CheckRole::class . ':billing', 'prefix' => 'billing'], function() {
         Route::resource('invoices', InvoiceController::class);
     });
 });
 
 // Rute Login & Logout
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+// Route::post('/login', [AuthController::class, 'login']);
+// Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Rute untuk permintaan sparepart, hanya bisa diakses oleh user yang login
-Route::middleware('auth')->group(function () {
-    Route::resource('requests', ServiceRequestController::class);
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// // Rute untuk permintaan sparepart, hanya bisa diakses oleh user yang login
+// Route::middleware('auth')->group(function () {
+//     Route::resource('requests', ServiceRequestController::class);
+//     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// });
+
+// Route::get('/requests', [ServiceRequestController::class, 'index'])->name('requests.index');
+
+// Route::get('/requests/pdf', [ServiceRequestController::class, 'generatePDF'])->name('requests.pdf');
+
+Route::get('/debug', function() {
+    dd([
+        'logged_in' => Auth::check(),
+        'user' => Auth::user(),
+        'session' => session()->all()
+    ]);
 });
 
-Route::get('/requests', [ServiceRequestController::class, 'index'])->name('requests.index');
+Route::post('/requests/pdf', [ServiceRequestController::class, 'generatePDF'])->name('requests.generatePDF');
 
-Route::get('/requests/pdf', [ServiceRequestController::class, 'generatePDF'])->name('requests.pdf');

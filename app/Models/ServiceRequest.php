@@ -12,7 +12,8 @@ class ServiceRequest extends Model
     protected $table = 'service_requests';
 
     protected $fillable = [
-        'user_id',       
+        'user_id',
+        'work_order_id',
         'sparepart_name',
         'quantity',
         'satuan', //
@@ -23,6 +24,11 @@ class ServiceRequest extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function workOrder()
+    {
+        return $this->belongsTo(WorkOrder::class, 'work_order_id');
     }
 
     // public $timestamps = true;

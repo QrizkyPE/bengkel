@@ -115,6 +115,10 @@
     </style>
 </head>
 <body>
+    {{-- @php
+        dd($requests->first()->workOrder);
+    @endphp --}}
+
     <div class="header">
         <div class="header-content">
             <div class="logo-container">
@@ -136,19 +140,19 @@
             
             <div class="info-container">
                 <div class="info-left" style="font-weight: bold">
-                    <p style="font-size: 15px; margin: 5px 0;">No. Polisi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: </p>
-                    <p style="font-size: 15px; margin: 5px 0;">Kilometer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: </p>
+                    <p style="font-size: 15px; margin: 5px 0;">No. Polisi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $no_polisi ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">Kilometer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $kilometer ?? '-' }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">Tanggal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ date('d/m/Y') }}</p>
                 </div>
                 <div class="info-right" style="font-weight: bold">
-                    <p style="font-size: 15px; margin: 5px 0;">No.SPK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : </p>
-                    <p style="font-size: 15px; margin: 5px 0;">Type Kend.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: </p>
+                    <p style="font-size: 15px; margin: 5px 0;">No.SPK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ $no_spk ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">Type Kend.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $type_kendaraan ?? '-' }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ Auth::user()->name }}</p>
                 </div>
             </div>
 
             <div class="keluhan-section" style="font-weight: bold">
-                <p style="font-size: 15px; margin: 5px 0;">KELUHAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: </p>
+                <p style="font-size: 15px; margin: 5px 0;">KELUHAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $keluhan ?? '-' }}</p>
             </div>
         </div>
         
