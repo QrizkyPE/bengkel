@@ -10,19 +10,42 @@ class Estimation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'service_request_id',
-        'estimated_cost',
+        'work_order_id',
+        'service_advisor',
+        'status',
         'notes',
-        'estimator_id',
+        'created_by',
+        'approved_by',
+        'approved_at',
+        'service_request_id',
     ];
 
-    public function serviceRequest()
+    protected $casts = [
+        'approved_at' => 'datetime',
+    ];
+
+    public function workOrder()
     {
-        return $this->belongsTo(ServiceRequest::class);
+        return $this->belongsTo(WorkOrder::class);
     }
 
-    public function estimator()
+    public function estimationItems()
     {
-        return $this->belongsTo(User::class, 'estimator_id');
+        return $this->hasMany(EstimationItem::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function getServiceRequestAttribute()
+    {
+        return $this->estimationItems->first()->serviceRequest ?? null;
     }
 } 

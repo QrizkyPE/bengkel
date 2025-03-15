@@ -28,4 +28,9 @@ class WorkOrder extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function estimations()
+    {
+        return $this->hasMany(Estimation::class);
+    }
 } 

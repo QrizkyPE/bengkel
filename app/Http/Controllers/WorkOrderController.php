@@ -22,17 +22,18 @@ class WorkOrderController extends Controller
     {
         $validatedData = $request->validate([
             'no_polisi' => 'required|string',
-            'kilometer' => 'required|integer',
-            'no_spk' => 'required|string|unique:work_orders',
+            'kilometer' => 'required|numeric',
+            'no_spk' => 'required|string',
             'type_kendaraan' => 'required|string',
             'customer_name' => 'required|string',
             'keluhan' => 'nullable|string',
         ]);
-
-        $validatedData['user_id'] = Auth::id();
+        
+        // Add the user_id to the validated data
+        $validatedData['user_id'] = auth()->id();
         
         $workOrder = WorkOrder::create($validatedData);
-
+        
         return redirect()->route('requests.index')
             ->with('success', 'Work Order berhasil dibuat.');
     }

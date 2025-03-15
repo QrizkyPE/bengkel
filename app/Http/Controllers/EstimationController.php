@@ -2,25 +2,238 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ServiceRequest;
 use App\Models\Estimation;
+use App\Models\EstimationItem;
+use App\Models\WorkOrder;
+use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PDF;
 
 class EstimationController extends Controller
 {
     public function index()
     {
-        // Get all service requests that need estimation
-        $serviceRequests = ServiceRequest::where('status', 'pending')
-            ->orWhere('status', 'estimated')
+        try {
+            $estimations = Estimation::with([
+                'estimationItems.serviceRequest',
+                'workOrder',
+                'creator'
+            ])
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
             ->get();
-        return view('estimations.index', compact('serviceRequests'));
+
+            return view('estimator.estimations.index', compact('estimations'));
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Estimation Index Error: ' . $e->getMessage());
+            
+            // Return with error message
+            return back()->with('error', 'An error occurred while loading estimations: ' . $e->getMessage());
+        }
     }
 
-    public function show(ServiceRequest $request)
+    public function create(Request $request)
     {
-        return view('estimations.show', compact('request'));
+        $workOrderId = $request->input('work_order_id');
+        
+        if (!$workOrderId) {
+            return redirect()->route('requests.index')
+                ->with('error', 'Work Order ID is required');
+        }
+        
+        $workOrder = WorkOrder::with('serviceRequests')->findOrFail($workOrderId);
+        
+        if ($workOrder->serviceRequests->isEmpty()) {
+            return redirect()->route('requests.index')
+                ->with('error', 'Work Order does not have any service requests');
+        }
+        
+        return view('estimator.estimations.create', compact('workOrder'));
+    }
+
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'work_order_id' => 'required|exists:work_orders,id',
+            'service_advisor' => 'required|string',
+            'notes' => 'nullable|string',
+            'part_number.*' => 'nullable|string',
+            'price.*' => 'required|numeric|min:0',
+            'discount.*' => 'nullable|numeric|min:0|max:100',
+            'service_request_id.*' => 'required|exists:service_requests,id',
+        ]);
+        
+        // Create the estimation
+        $estimation = Estimation::create([
+            'work_order_id' => $validatedData['work_order_id'],
+            'service_advisor' => $validatedData['service_advisor'],
+            'notes' => $validatedData['notes'] ?? null,
+            'status' => 'pending',
+            'created_by' => Auth::id(),
+        ]);
+        
+        // Create the estimation items
+        $serviceRequestIds = $request->input('service_request_id');
+        $partNumbers = $request->input('part_number');
+        $prices = $request->input('price');
+        $discounts = $request->input('discount');
+        
+        foreach ($serviceRequestIds as $index => $serviceRequestId) {
+            $price = $prices[$index] ?? 0;
+            $discount = $discounts[$index] ?? 0;
+            $total = $price * (1 - $discount / 100);
+            
+            EstimationItem::create([
+                'estimation_id' => $estimation->id,
+                'service_request_id' => $serviceRequestId,
+                'part_number' => $partNumbers[$index] ?? null,
+                'price' => $price,
+                'discount' => $discount,
+                'total' => $total,
+            ]);
+        }
+        
+        return redirect()->route('estimations.index')
+            ->with('success', 'Estimation created successfully');
+    }
+
+    public function show(Estimation $estimation)
+    {
+        // Load the estimation with its items
+        $estimation->load([
+            'estimationItems.serviceRequest',
+            'workOrder'
+        ]);
+        
+        // Get the service request directly from the estimation item
+        $serviceRequest = $estimation->estimationItems->first()->serviceRequest ?? null;
+        
+        if (!$serviceRequest) {
+            return back()->with('error', 'Request data not found for this estimation.');
+        }
+
+        return view('estimator.estimations.show', [
+            'estimation' => $estimation,
+            'serviceRequest' => $serviceRequest
+        ]);
+    }
+
+    public function edit(Estimation $estimation)
+    {
+        // Load the estimation with its items and work order
+        $estimation->load([
+            'estimationItems.serviceRequest',
+            'workOrder'
+        ]);
+        
+        return view('estimator.estimations.edit', compact('estimation'));
+    }
+
+    public function update(Request $request, Estimation $estimation)
+    {
+        if ($estimation->status !== 'pending') {
+            return redirect()->route('estimations.index')
+                ->with('error', 'Cannot update an estimation that is not pending');
+        }
+        
+        $validatedData = $request->validate([
+            'notes' => 'nullable|string',
+            'part_number.*' => 'nullable|string',
+            'price.*' => 'required|string',
+            'discount.*' => 'nullable|numeric|min:0|max:100',
+            'estimation_item_id.*' => 'required|exists:estimation_items,id',
+        ]);
+        
+        // Update the estimation
+        $estimation->update([
+            'service_advisor' => auth()->user()->name,
+            'notes' => $validatedData['notes'] ?? null,
+        ]);
+        
+        // Update the estimation items
+        $estimationItemIds = $request->input('estimation_item_id');
+        $partNumbers = $request->input('part_number');
+        $prices = $request->input('price');
+        $discounts = $request->input('discount');
+        
+        // Debug information
+        \Log::info('Update Estimation Items', [
+            'estimation_id' => $estimation->id,
+            'part_numbers' => $partNumbers,
+            'prices' => $prices,
+            'discounts' => $discounts
+        ]);
+        
+        foreach ($estimationItemIds as $index => $estimationItemId) {
+            $estimationItem = \App\Models\EstimationItem::find($estimationItemId);
+            
+            // Convert comma-formatted price to numeric
+            $priceStr = $prices[$index] ?? '0';
+            $price = (float) str_replace(',', '', $priceStr);
+            
+            $discount = (float) ($discounts[$index] ?? 0);
+            
+            // Calculate total based on price, discount, and quantity
+            $quantity = $estimationItem->serviceRequest->quantity;
+            $total = $price * $quantity * (1 - $discount / 100);
+            
+            // Debug information
+            \Log::info('Updating Item', [
+                'item_id' => $estimationItemId,
+                'part_number' => $partNumbers[$index] ?? null,
+                'price_str' => $priceStr,
+                'price_converted' => $price,
+                'discount' => $discount,
+                'quantity' => $quantity,
+                'total' => $total
+            ]);
+            
+            $estimationItem->update([
+                'part_number' => $partNumbers[$index] ?? null,
+                'price' => $price,
+                'discount' => $discount,
+                'total' => $total,
+            ]);
+        }
+        
+        return redirect()->route('estimations.index')
+            ->with('success', 'Estimation updated successfully');
+    }
+
+    public function approve(Request $request, Estimation $estimation)
+    {
+        if ($estimation->status !== 'pending') {
+            return redirect()->route('estimations.show', $estimation)
+                ->with('error', 'Cannot approve an estimation that is not pending');
+        }
+        
+        $estimation->update([
+            'status' => 'approved',
+            'approved_by' => Auth::id(),
+            'approved_at' => now(),
+        ]);
+        
+        return redirect()->route('estimations.show', $estimation)
+            ->with('success', 'Estimation approved successfully');
+    }
+
+    public function reject(Request $request, Estimation $estimation)
+    {
+        if ($estimation->status !== 'pending') {
+            return redirect()->route('estimations.show', $estimation)
+                ->with('error', 'Cannot reject an estimation that is not pending');
+        }
+        
+        $estimation->update([
+            'status' => 'rejected',
+            'approved_by' => Auth::id(),
+            'approved_at' => now(),
+        ]);
+        
+        return redirect()->route('estimations.show', $estimation)
+            ->with('success', 'Estimation rejected successfully');
     }
 
     public function createEstimation(ServiceRequest $request)
@@ -53,5 +266,19 @@ class EstimationController extends Controller
         ]);
 
         return $pdf->download('estimation-'.$serviceRequest->id.'.pdf');
+    }
+
+    public function history()
+    {
+        $estimations = Estimation::with([
+            'workOrder', 
+            'estimationItems.serviceRequest', 
+            'creator'
+        ])
+        ->whereIn('status', ['approved', 'rejected'])
+        ->orderBy('approved_at', 'desc')
+        ->get();
+        
+        return view('estimator.estimations.history', compact('estimations'));
     }
 } 

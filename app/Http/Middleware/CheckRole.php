@@ -4,13 +4,29 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    public function handle(Request $request, Closure $next, string $role): Response
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string  $roles
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next, ...$roles)
     {
-        if (!$request->user() || $request->user()->role !== $role) {
+        // Check if user is logged in
+        if (!$request->user()) {
+            return redirect()->route('login');
+        }
+
+        // Convert roles string to array if it's not already
+        $roles = is_array($roles) ? $roles : explode(',', $roles[0]);
+
+        // Check if the user has one of the required roles
+        if (!in_array($request->user()->role, $roles)) {
             abort(403, 'Unauthorized action.');
         }
 

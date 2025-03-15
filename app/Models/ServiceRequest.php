@@ -19,6 +19,14 @@ class ServiceRequest extends Model
         'satuan', //
         'kebutuhan_part',
         'keterangan',
+        'no_spk',
+        'no_polisi',
+        'type_kendaraan',
+        'kilometer',
+        'user',
+        'tanggal',
+        'keluhan',
+        'status',
     ];
 
     public function user()
@@ -28,7 +36,17 @@ class ServiceRequest extends Model
 
     public function workOrder()
     {
-        return $this->belongsTo(WorkOrder::class, 'work_order_id');
+        return $this->belongsTo(WorkOrder::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(ServiceRequestItem::class);
+    }
+
+    public function estimationItems()
+    {
+        return $this->hasMany(EstimationItem::class);
     }
 
     // public $timestamps = true;

@@ -34,25 +34,56 @@
                 <div class="card-header bg-light">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <h5 class="mb-0">Work Order #{{ $workOrderRequests->first()->workOrder->no_spk }}</h5>
+                            <h5 class="mb-0">
+                                Work Order #{{ $workOrderRequests->first()->workOrder->no_spk }}
+                                @php
+                                    $hasEstimation = \App\Models\Estimation::where('work_order_id', $workOrderId)->first();
+                                    $status = 'Not sent';
+                                    $statusClass = 'bg-secondary';
+                                    
+                                    if ($hasEstimation) {
+                                        $status = ucfirst($hasEstimation->status);
+                                        if ($hasEstimation->status == 'pending') {
+                                            $statusClass = 'bg-warning';
+                                        } elseif ($hasEstimation->status == 'approved') {
+                                            $statusClass = 'bg-success';
+                                        } elseif ($hasEstimation->status == 'rejected') {
+                                            $statusClass = 'bg-danger';
+                                        }
+                                    }
+                                @endphp
+                                <span class="badge {{ $statusClass }} ms-2">{{ $status }}</span>
+                            </h5>
                         </div>
                         <div class="col-md-4 text-md-end">
-                            <div class="d-flex justify-content-end">
-                                <a href="{{ route('requests.create', ['work_order' => $workOrderId]) }}" class="btn btn-success btn-sm me-2">
-                                    <i class="fas fa-plus"></i> Tambah Sparepart
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ route('requests.create', ['work_order' => $workOrderId]) }}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Sparepart
                                 </a>
-                                <form action="{{ route('requests.generatePDF') }}" method="POST" class="d-inline me-2">
+                                <form action="{{ route('requests.generatePDF') }}" method="POST" class="d-inline">
                                     @csrf
                                     <input type="hidden" name="work_order_id" value="{{ $workOrderId }}">
-                                    <button type="submit" class="btn btn-secondary btn-sm">
+                                    <button type="submit" class="btn btn-secondary">
                                         <i class="fas fa-file-pdf"></i> PDF
                                     </button>
                                 </form>
-                                <form action="{{ route('work_orders.destroy', $workOrderRequests->first()->workOrder->id) }}" method="POST" class="delete-work-order-form">
+                                @php
+                                    $canSubmit = !$hasEstimation || $hasEstimation->status === 'rejected';
+                                @endphp
+                                @if($canSubmit)
+                                    <form action="{{ route('submit.to.estimator') }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <input type="hidden" name="work_order_id" value="{{ $workOrderId }}">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-file-invoice-dollar"></i> Ajukan
+                                        </button>
+                                    </form>
+                                @endif
+                                <form action="{{ route('work_orders.destroy', $workOrderRequests->first()->workOrder->id) }}" method="POST" class="delete-work-order-form d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i> Hapus WO
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-trash"></i> Hapus
                                     </button>
                                 </form>
                             </div>
@@ -123,25 +154,57 @@
                     <div class="card-header bg-light">
                         <div class="row align-items-center">
                             <div class="col-md-8">
-                                <h5 class="mb-0">Work Order #{{ $workOrder->no_spk }}</h5>
+                                <h5 class="mb-0">
+                                    Work Order #{{ $workOrder->no_spk }}
+                                    @php
+                                        $hasEstimation = \App\Models\Estimation::where('work_order_id', $workOrder->id)->first();
+                                        $status = 'Not sent';
+                                        $statusClass = 'bg-secondary';
+                                        
+                                        if ($hasEstimation) {
+                                            $status = ucfirst($hasEstimation->status);
+                                            if ($hasEstimation->status == 'pending') {
+                                                $statusClass = 'bg-warning';
+                                            } elseif ($hasEstimation->status == 'approved') {
+                                                $statusClass = 'bg-success';
+                                            } elseif ($hasEstimation->status == 'rejected') {
+                                                $statusClass = 'bg-danger';
+                                            }
+                                        }
+                                    @endphp
+                                    <span class="badge {{ $statusClass }} ms-2">{{ $status }}</span>
+                                </h5>
                             </div>
                             <div class="col-md-4 text-md-end">
-                                <div class="d-flex justify-content-end">
-                                    <a href="{{ route('requests.create', ['work_order' => $workOrder->id]) }}" class="btn btn-success btn-sm me-2">
-                                        <i class="fas fa-plus"></i> Tambah Sparepart
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ route('requests.create', ['work_order' => $workOrder->id]) }}" class="btn btn-success">
+                                        <i class="fas fa-plus"></i> Sparepart
                                     </a>
-                                    <form action="{{ route('requests.generatePDF') }}" method="POST" class="d-inline me-2">
+                                    <form action="{{ route('requests.generatePDF') }}" method="POST" class="d-inline">
                                         @csrf
                                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                                        <button type="submit" class="btn btn-secondary btn-sm">
+                                        <button type="submit" class="btn btn-secondary">
                                             <i class="fas fa-file-pdf"></i> PDF
                                         </button>
                                     </form>
-                                    <form action="{{ route('work_orders.destroy', $workOrder->id) }}" method="POST" class="delete-work-order-form">
+                                    @php
+                                        $hasEstimation = \App\Models\Estimation::where('work_order_id', $workOrder->id)->first();
+                                        $canSubmit = !$hasEstimation || $hasEstimation->status === 'rejected';
+                                    @endphp
+                                    @if($canSubmit)
+                                        <form action="{{ route('submit.to.estimator') }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-file-invoice-dollar"></i> Ajukan
+                                            </button>
+                                        </form>
+                                    @endif
+                                    <form action="{{ route('work_orders.destroy', $workOrder->id) }}" method="POST" class="delete-work-order-form d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="fas fa-trash"></i> Hapus WO
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i> Hapus
                                         </button>
                                     </form>
                                 </div>
@@ -233,6 +296,25 @@
     .card-header .btn-sm {
         margin-bottom: 5px;
         display: inline-block;
+    }
+
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        border-radius: 0.2rem;
+    }
+
+    .btn-group form {
+        display: inline-block;
+    }
+
+    .btn-group .btn {
+        margin-right: 2px;
+    }
+
+    .btn-group form:last-child .btn {
+        margin-right: 0;
     }
 </style>
 @endpush
