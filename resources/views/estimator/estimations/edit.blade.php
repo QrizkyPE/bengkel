@@ -77,15 +77,7 @@
                             </table>
                         </div>
 
-                        <div class="form-group mt-4">
-                            <label for="notes">Catatan (opsional)</label>
-                            <textarea name="notes" id="notes" class="form-control @error('notes') is-invalid @enderror" rows="3">{{ old('notes', $estimation->notes) }}</textarea>
-                            @error('notes')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
+                        
 
                         <div class="mt-4">
                             <button type="button" id="validateAndSubmit" class="btn btn-primary">

@@ -202,38 +202,39 @@ class EstimationController extends Controller
             ->with('success', 'Estimation updated successfully');
     }
 
-    public function approve(Request $request, Estimation $estimation)
+    public function approve(Request $request, $id)
     {
-        if ($estimation->status !== 'pending') {
-            return redirect()->route('estimations.show', $estimation)
-                ->with('error', 'Cannot approve an estimation that is not pending');
-        }
+        $estimation = Estimation::findOrFail($id);
         
-        $estimation->update([
-            'status' => 'approved',
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
-        ]);
+        // Optional notes for approval
+        $notes = $request->input('notes');
         
-        return redirect()->route('estimations.show', $estimation)
-            ->with('success', 'Estimation approved successfully');
+        $estimation->status = 'approved';
+        $estimation->approved_at = now();
+        $estimation->notes = $notes;
+        $estimation->save();
+        
+        return redirect()->route('estimations.history')
+            ->with('success', 'Estimasi berhasil disetujui.');
     }
 
-    public function reject(Request $request, Estimation $estimation)
+    public function reject(Request $request, $id)
     {
-        if ($estimation->status !== 'pending') {
-            return redirect()->route('estimations.show', $estimation)
-                ->with('error', 'Cannot reject an estimation that is not pending');
-        }
-        
-        $estimation->update([
-            'status' => 'rejected',
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
+        // Validate that notes are provided for rejection
+        $validated = $request->validate([
+            'notes' => 'required|string|max:500',
+        ], [
+            'notes.required' => 'Catatan wajib diisi saat menolak estimasi. Berikan alasan penolakan.'
         ]);
         
-        return redirect()->route('estimations.show', $estimation)
-            ->with('success', 'Estimation rejected successfully');
+        $estimation = Estimation::findOrFail($id);
+        $estimation->status = 'rejected';
+        $estimation->approved_at = now(); // We still record when it was processed
+        $estimation->notes = $validated['notes'];
+        $estimation->save();
+        
+        return redirect()->route('estimations.index')
+            ->with('success', 'Estimasi berhasil ditolak.');
     }
 
     public function createEstimation(ServiceRequest $request)
@@ -280,5 +281,14 @@ class EstimationController extends Controller
         ->get();
         
         return view('estimator.estimations.history', compact('estimations'));
+    }
+
+    public function approveEstimation(Request $request, $id)
+    {
+        if (auth()->user()->role !== 'estimator') {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        return $this->approve($request, $id);
     }
 } 

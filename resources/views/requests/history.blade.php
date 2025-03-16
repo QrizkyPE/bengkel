@@ -100,7 +100,18 @@
                                 </tr>
                                 @endforeach
                             </tbody>
-                            
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" class="text-end">
+                                        <strong>Status:</strong> 
+                                        @if($estimation && $estimation->status == 'approved')
+                                            <span class="badge bg-success">Disetujui pada {{ $estimation->approved_at->format('d/m/Y H:i') }}</span>
+                                        @elseif($estimation && $estimation->status == 'rejected')
+                                            <span class="badge bg-danger">Ditolak pada {{ $estimation->approved_at->format('d/m/Y H:i') }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 @else
@@ -111,8 +122,17 @@
                 
                 @if($estimation && $estimation->notes)
                 <div class="mt-3">
-                    <h6>Catatan Estimator:</h6>
-                    <p>{{ $estimation->notes }}</p>
+                    <div class="card">
+                        <div class="card-header bg-{{ $estimation->status == 'approved' ? 'success' : 'danger' }} text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-{{ $estimation->status == 'approved' ? 'check-circle' : 'exclamation-circle' }}"></i>
+                                Catatan {{ $estimation->status == 'approved' ? 'Persetujuan' : 'Penolakan' }}
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">{{ $estimation->notes }}</p>
+                        </div>
+                    </div>
                 </div>
                 @endif
             </div>

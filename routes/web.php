@@ -226,15 +226,15 @@ Route::group(['middleware' => 'auth'], function() {
             );
         })->name('estimations.show');
         
-        Route::post('/estimations/{estimation}/approve', function($estimation) {
+        Route::post('/estimator/estimations/{estimation}/approve', function($estimation) {
             if (auth()->user()->role !== 'estimator') {
                 abort(403, 'Unauthorized action.');
             }
             return app()->make('App\Http\Controllers\EstimationController')->approve(
                 request(),
-                \App\Models\Estimation::findOrFail($estimation)
+                $estimation
             );
-        })->name('estimations.approve');
+        })->name('estimations.approve')->middleware('auth');
         
         Route::post('/estimations/{estimation}/reject', function($estimation) {
             if (auth()->user()->role !== 'estimator') {
@@ -242,7 +242,7 @@ Route::group(['middleware' => 'auth'], function() {
             }
             return app()->make('App\Http\Controllers\EstimationController')->reject(
                 request(),
-                \App\Models\Estimation::findOrFail($estimation)
+                $estimation
             );
         })->name('estimations.reject');
     });
@@ -256,4 +256,17 @@ Route::resource('work_orders', WorkOrderController::class);
 
 // Add this new route for GET requests
 Route::get('/requests/pdf/{work_order_id}', [ServiceRequestController::class, 'generatePDF'])->name('requests.generatePDF.get');
+
+// Alternative approach using controller method directly
+Route::post('/estimator/estimations/{id}/approve', [App\Http\Controllers\EstimationController::class, 'approveEstimation'])
+    ->name('estimations.approve.direct')
+    ->middleware('auth');
+
+// Direct route to the approve method
+Route::post('/estimator/estimations/{id}/approve', function($id) {
+    if (auth()->user()->role !== 'estimator') {
+        abort(403, 'Unauthorized action.');
+    }
+    return app()->make('App\Http\Controllers\EstimationController')->approve(request(), $id);
+})->middleware('auth');
 

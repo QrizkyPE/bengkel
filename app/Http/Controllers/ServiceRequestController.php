@@ -313,6 +313,6 @@ class ServiceRequestController extends Controller
         $estimation->delete();
         
         return redirect()->route('requests.index')
-            ->with('success', 'Work order has been reset and is ready for editing');
+            ->with('success', 'Work order telah direset dan siap untuk diedit kembali. Perhatikan catatan penolakan sebelumnya untuk perbaikan.');
     }
 }

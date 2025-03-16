@@ -61,40 +61,71 @@
                         </table>
                     </div>
 
-                    @if($estimation->notes)
-                    <div class="mt-3">
-                        <h6>Catatan:</h6>
-                        <p>{{ $estimation->notes }}</p>
+                    @if($estimation->status === 'pending')
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Tindakan</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <form action="{{ route('estimations.approve', $estimation->id) }}" method="POST">
+                                        @csrf
+                                        <div class="form-group mb-3">
+                                            <label for="approve_notes">Catatan (opsional)</label>
+                                            <textarea name="notes" id="approve_notes" class="form-control" rows="3"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check"></i> Setujui Estimasi
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-md-6">
+                                    <form action="{{ route('estimations.reject', $estimation->id) }}" method="POST" id="rejectForm">
+                                        @csrf
+                                        <div class="form-group mb-3">
+                                            <label for="reject_notes">Catatan <span class="text-danger">*</span></label>
+                                            <textarea name="notes" id="reject_notes" class="form-control @error('notes') is-invalid @enderror" rows="3" required></textarea>
+                                            <div class="invalid-feedback" id="notesError">
+                                                Catatan wajib diisi saat menolak estimasi. Berikan alasan penolakan.
+                                            </div>
+                                            @error('notes')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                        <button type="button" id="rejectButton" class="btn btn-danger">
+                                            <i class="fas fa-times"></i> Tolak Estimasi
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @else
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Status Estimasi</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert {{ $estimation->status === 'approved' ? 'alert-success' : 'alert-danger' }}">
+                                <strong>Status:</strong> 
+                                {{ $estimation->status === 'approved' ? 'Disetujui' : 'Ditolak' }} 
+                                pada {{ $estimation->approved_at->format('d/m/Y H:i') }}
+                            </div>
+                            
+                            @if($estimation->notes)
+                            <div class="mt-3">
+                                <h6>Catatan:</h6>
+                                <p>{{ $estimation->notes }}</p>
+                            </div>
+                            @endif
+                        </div>
                     </div>
                     @endif
 
                     <div class="mt-4">
-                        @if($estimation->status === 'pending')
-                            <form action="{{ route('estimations.approve', $estimation->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-check"></i> Setujui
-                                </button>
-                            </form>
-
-                            <form action="{{ route('estimations.reject', $estimation->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-times"></i> Tolak
-                                </button>
-                            </form>
-                        @else
-                            <div class="alert alert-info">
-                                Status: 
-                                @if($estimation->status === 'approved')
-                                    <span class="badge bg-success">Disetujui</span>
-                                @elseif($estimation->status === 'rejected')
-                                    <span class="badge bg-danger">Ditolak</span>
-                                @endif
-                                pada {{ $estimation->approved_at ? $estimation->approved_at->format('d/m/Y H:i') : '-' }}
-                            </div>
-                        @endif
-
                         <a href="{{ route('estimations.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Kembali
                         </a>
@@ -104,4 +135,33 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Client-side validation for reject form
+        const rejectButton = document.getElementById('rejectButton');
+        if (rejectButton) {
+            rejectButton.addEventListener('click', function() {
+                const rejectNotes = document.getElementById('reject_notes');
+                const notesError = document.getElementById('notesError');
+                
+                if (!rejectNotes.value.trim()) {
+                    rejectNotes.classList.add('is-invalid');
+                    notesError.style.display = 'block';
+                } else {
+                    document.getElementById('rejectForm').submit();
+                }
+            });
+            
+            // Remove error when user starts typing
+            document.getElementById('reject_notes').addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('is-invalid');
+                }
+            });
+        }
+    });
+</script>
+@endpush
 @endsection 
