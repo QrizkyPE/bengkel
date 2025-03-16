@@ -291,4 +291,25 @@ class EstimationController extends Controller
         
         return $this->approve($request, $id);
     }
+
+    public function generatePDF(Request $request, $id)
+    {
+        $estimation = Estimation::with([
+            'estimationItems.serviceRequest.user',
+            'workOrder',
+            'creator'
+        ])->findOrFail($id);
+        
+        $pdf = PDF::loadView('estimator.estimations.estimation-pdf', [
+            'estimation' => $estimation
+        ]);
+        
+        // Sanitize the work order number to remove slashes and other problematic characters
+        $safeWorkOrderNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $estimation->workOrder->no_spk);
+        
+        // Generate a filename based on the sanitized work order number
+        $filename = 'estimasi-' . $safeWorkOrderNumber . '.pdf';
+        
+        return $pdf->download($filename);
+    }
 } 

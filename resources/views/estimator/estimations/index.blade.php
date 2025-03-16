@@ -34,6 +34,12 @@
                             <a href="{{ route('estimations.edit', $estimation->id) }}" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Edit Harga
                             </a>
+                            <form action="{{ url('/estimator/estimations/'.$estimation->id.'/pdf') }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-secondary">
+                                    <i class="fas fa-file-pdf"></i> PDF
+                                </button>
+                            </form>
                             @if($estimation->status == 'pending')
                                 <form action="{{ url('/estimator/estimations/'.$estimation->id.'/approve') }}" method="POST" class="d-inline approve-form" data-estimation-id="{{ $estimation->id }}">
                                     @csrf
@@ -60,7 +66,7 @@
                     <div class="col-md-6">
                         <p class="mb-1"><strong>Customer:</strong> {{ $estimation->workOrder->customer_name }}</p>
                         <p class="mb-1"><strong>Tanggal:</strong> {{ $estimation->created_at->format('d/m/Y') }}</p>
-                        <p class="mb-1"><strong>Service Advisor:</strong> {{ $estimation->service_advisor }}</p>
+                        <p class="mb-1"><strong>Service Advisor:</strong> {{ auth()->user()->name }}</p>
 
                         <p class="mb-1"><strong>Status:</strong> 
                             @if($estimation->status == 'pending')
@@ -80,8 +86,8 @@
                             <tr style="text-align: center">
                                 <th style="width: 5%">No</th>
                                 <th style="width: 20%">Item Pekerjaan</th>
-                                <th style="width: 10%">QTY</th>
                                 <th style="width: 15%">Part Number</th>
+                                <th style="width: 10%">QTY</th>
                                 <th style="width: 15%">Harga Satuan</th>
                                 <th style="width: 10%">Discount (%)</th>
                                 <th style="width: 15%">Total</th>
@@ -92,8 +98,8 @@
                             <tr>
                                 <td style="text-align: center;">{{ $loop->iteration }}</td>
                                 <td>{{ $item->serviceRequest->sparepart_name }}</td>
-                                <td class="text-center">{{ $item->serviceRequest->quantity }} {{ $item->serviceRequest->satuan }}</td>
                                 <td>{{ $item->part_number ?? '-' }}</td>
+                                <td class="text-center">{{ $item->serviceRequest->quantity }} {{ $item->serviceRequest->satuan }}</td>
                                 <td class="text-end">{{ number_format($item->price, 0, ',', '.') }}</td>
                                 <td class="text-center">{{ $item->discount }}%</td>
                                 <td class="text-end">{{ number_format($item->total, 0, ',', '.') }}</td>

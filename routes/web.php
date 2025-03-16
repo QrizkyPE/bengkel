@@ -270,3 +270,11 @@ Route::post('/estimator/estimations/{id}/approve', function($id) {
     return app()->make('App\Http\Controllers\EstimationController')->approve(request(), $id);
 })->middleware('auth');
 
+// Add this route for generating estimation PDF
+Route::post('/estimator/estimations/{id}/pdf', function($id) {
+    if (auth()->user()->role !== 'estimator') {
+        abort(403, 'Unauthorized action.');
+    }
+    return app()->make('App\Http\Controllers\EstimationController')->generatePDF(request(), $id);
+})->middleware('auth');
+

@@ -37,8 +37,8 @@
                                     <tr style="text-align: center">
                                         <th style="width: 5%">No</th>
                                         <th style="width: 20%">Item Pekerjaan</th>
-                                        <th style="width: 10%">QTY</th>
                                         <th style="width: 15%">Part Number</th>
+                                        <th style="width: 10%">QTY</th>
                                         <th style="width: 15%">Harga Satuan</th>
                                         <th style="width: 10%">Discount (%)</th>
                                         <th style="width: 15%">Total</th>
@@ -49,11 +49,11 @@
                                     <tr>
                                         <td style="text-align: center;">{{ $loop->iteration }}</td>
                                         <td>{{ $item->serviceRequest->sparepart_name }}</td>
-                                        <td class="text-center">{{ $item->serviceRequest->quantity }} {{ $item->serviceRequest->satuan }}</td>
                                         <td>
                                             <input type="hidden" name="estimation_item_id[]" value="{{ $item->id }}">
                                             <input type="text" name="part_number[]" class="form-control" value="{{ old('part_number.'.$index, $item->part_number) }}">
                                         </td>
+                                        <td class="text-center">{{ $item->serviceRequest->quantity }} {{ $item->serviceRequest->satuan }}</td>
                                         <td>
                                             <input type="text" name="price[]" class="form-control price-input" value="{{ old('price.'.$index, number_format($item->price, 0, '', ',')) }}" required>
                                         </td>
