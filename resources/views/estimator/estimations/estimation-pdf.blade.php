@@ -126,7 +126,7 @@
             </div>
             <div class="company-info">
                 <div class="company-name">CV.ARBELLA LEBAK SEJAHTERA</div>
-                <div style="font-weight: bold; font-size:15px">JL.PANTI SOSIAL KM.19 RT.024 RW.009 No.41</div>
+                <div style="font-weight: bold; font-size:15px">JL.PANTI SOSIAL KM.10 RT.024 RW.009 No.41</div>
                 <div style="font-weight: bold; font-size:15px">KEL.KEBUN BUNGA - KEC. SUKARAME - KOTA PALEMBANG - SUMSEL 30152</div>
                 <div style="font-size:10px">Phone/WA: 082278100852&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Email: Arbellalebaksejahtera@gmail.com</div>
             </div>
@@ -141,12 +141,15 @@
             
             <div class="info-container">
                 <div class="info-left" style="font-weight: bold">
+                    <br>
                     <p style="font-size: 15px; margin: 5px 0;">No. Polisi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->no_polisi ?? '-' }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">Kilometer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->kilometer ?? '-' }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">No.SPK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ $estimation->workOrder->no_spk ?? '-' }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">Tanggal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->created_at->format('d/m/Y') }}</p>
                 </div>
+                
                 <div class="info-right" style="font-weight: bold">
+                    <p style="font-size: 15px; margin: 5px 0;">ESTIMASI PERBAIKAN KENDARAAN</p>
                     <p style="font-size: 15px; margin: 5px 0;">Type Kend.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ $estimation->workOrder->type_kendaraan ?? '-' }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">Serv.Advisor&nbsp;&nbsp;&nbsp;&nbsp;: {{ auth()->user()->name }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">Cust name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->customer_name ?? '-' }}</p>

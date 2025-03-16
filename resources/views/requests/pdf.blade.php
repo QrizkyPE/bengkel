@@ -126,7 +126,7 @@
             </div>
             <div class="company-info">
                 <div class="company-name">CV.ARBELLA LEBAK SEJAHTERA</div>
-                <div style="font-weight: bold; font-size:15px">JL.PANTI SOSIAL KM.19 RT.024 RW.009 No.41</div>
+                <div style="font-weight: bold; font-size:15px">JL.PANTI SOSIAL KM.10 RT.024 RW.009 No.41</div>
                 <div style="font-weight: bold; font-size:15px">KEL.KEBUN BUNGA - KEC. SUKARAME - KOTA PALEMBANG - SUMSEL 30152</div>
                 <div style="font-size:10px">Phone/WA: 082278100852&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Email: Arbellalebaksejahtera@gmail.com</div>
             </div>
