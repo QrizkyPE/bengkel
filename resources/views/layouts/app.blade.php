@@ -92,14 +92,7 @@
                                         @csrf
                                     </form>
                                 </div>
-                            </li>
-                            @if(auth()->user()->role === 'estimator')
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('estimations.index') }}">
-                                        <i class="fas fa-file-invoice-dollar"></i> Estimasi
-                                    </a>
-                                </li>
-                            @endif
+                            
                         @endguest
                     </ul>
                 </div>
@@ -138,6 +131,19 @@
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link {{ request()->routeIs('estimations.history') ? 'active' : '' }}" href="{{ route('estimations.history') }}">
+                                            <i class="fas fa-history"></i> History
+                                        </a>
+                                    </li>
+                                @endif
+
+                                @if(auth()->user()->role === 'billing')
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('billing.index') ? 'active' : '' }}" href="{{ route('billing.index') }}">
+                                            <i class="fas fa-file-invoice-dollar"></i> Billing
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('billing.history') ? 'active' : '' }}" href="{{ route('billing.history') }}">
                                             <i class="fas fa-history"></i> History
                                         </a>
                                     </li>

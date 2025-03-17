@@ -12,6 +12,7 @@ use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\WorkOrderController;
 use App\Http\Middleware\CheckRole;
+use App\Http\Controllers\BillingController;
 
 // Add this at the top of your routes file, after the <?php line
 error_reporting(E_ALL);
@@ -277,4 +278,47 @@ Route::post('/estimator/estimations/{id}/pdf', function($id) {
     }
     return app()->make('App\Http\Controllers\EstimationController')->generatePDF(request(), $id);
 })->middleware('auth');
+
+// Billing routes
+Route::middleware(['auth'])->group(function () {
+    // Billing index
+    Route::get('/billing', function() {
+        if (auth()->user()->role !== 'billing') {
+            abort(403, 'Unauthorized action.');
+        }
+        return app()->make('App\Http\Controllers\BillingController')->index();
+    })->name('billing.index');
+    
+    // Create invoice
+    Route::post('/billing/estimations/{estimation}/invoice', function($estimation) {
+        if (auth()->user()->role !== 'billing') {
+            abort(403, 'Unauthorized action.');
+        }
+        return app()->make('App\Http\Controllers\BillingController')->createInvoice(request(), $estimation);
+    })->name('billing.create.invoice');
+    
+    // Mark invoice as paid
+    Route::post('/billing/invoices/{invoice}/paid', function($invoice) {
+        if (auth()->user()->role !== 'billing') {
+            abort(403, 'Unauthorized action.');
+        }
+        return app()->make('App\Http\Controllers\BillingController')->markAsPaid(request(), $invoice);
+    })->name('billing.mark.paid');
+    
+    // Generate invoice PDF
+    Route::post('/billing/invoices/{invoice}/pdf', function($invoice) {
+        if (auth()->user()->role !== 'billing') {
+            abort(403, 'Unauthorized action.');
+        }
+        return app()->make('App\Http\Controllers\BillingController')->generatePDF(request(), $invoice);
+    })->name('billing.generate.pdf');
+    
+    // Billing history
+    Route::get('/billing/history', function() {
+        if (auth()->user()->role !== 'billing') {
+            abort(403, 'Unauthorized action.');
+        }
+        return app()->make('App\Http\Controllers\BillingController')->history();
+    })->name('billing.history');
+});
 

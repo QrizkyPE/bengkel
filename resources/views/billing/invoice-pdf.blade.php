@@ -10,6 +10,7 @@
             padding: 20px;
             position: relative;
             min-height: 100%;
+            color: #000000;
         }
         .header {
             margin-bottom: 30px;
@@ -59,6 +60,7 @@
         .info-container {
             width: 100%;
             margin-bottom: 15px;
+           
         }
         .info-left {
             float: left;
@@ -68,17 +70,16 @@
             float: right;
             width: 50%;
         }
-        .keluhan-section {
-            clear: both;
-            padding-top: 10px;
-        }
+        
         .content-wrapper {
             margin-bottom: 200px; /* Space for footer */
         }
-        table {
+        table.items-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 30px;
+            margin-top: 20px; /* Add space between info and table */
+            clear: both; /* Ensure table starts after floated elements */
         }
         th, td {
             border: 1px solid #000;
@@ -100,8 +101,8 @@
         }
         .signature-box {
             display: inline-block;
-            width: 32%;
-            text-align: left;
+            width: 70%;
+            text-align: right;
             margin: 0 2px;
         }
         .signature-line {
@@ -136,33 +137,31 @@
 
     <div class="content-wrapper">
         <div class="document-title">
-            <h3 style="text-align: left; font-size: 15px; margin-top: 0; margin-bottom: 15px;">Kepada Yth :</h3>
-            <h3 style="text-align: left; font-size: 15px; margin-top: 0; margin-bottom: 15px;">PT.Batavia Prosperindo Trans,TBK</h3>
+            <p style="font-size: 15px; margin: 5px 0;">Kepada Yth : <br>PT.Batavia Prosperindo Trans,TBK</p>
             
             <div class="info-container">
                 <div class="info-left" style="font-weight: bold">
                     <br>
-                    <p style="font-size: 15px; margin: 5px 0;">No. Polisi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->no_polisi ?? '-' }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">Kilometer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->kilometer ?? '-' }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">No.SPK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ $estimation->workOrder->no_spk ?? '-' }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">Tanggal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->created_at->format('d/m/Y') }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">No. Polisi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->workOrder->no_polisi ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">Kilometer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->workOrder->kilometer ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">No.SPK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ $invoice->estimation->workOrder->no_spk ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">Tanggal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->created_at->format('d/m/Y') }}</p>
                 </div>
                 
                 <div class="info-right" style="font-weight: bold">
-                    <p style="font-size: 15px; margin: 5px 0;">ESTIMASI PERBAIKAN KENDARAAN</p>
-                    <p style="font-size: 15px; margin: 5px 0;">Type Kend.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ $estimation->workOrder->type_kendaraan ?? '-' }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">Serv.Advisor&nbsp;&nbsp;&nbsp;&nbsp;: {{ auth()->user()->name }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">Cust name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->customer_name ?? '-' }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->estimationItems->first()->serviceRequest->user->name ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">INVOICE: {{ $invoice->invoice_number ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">Type Kend.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ $invoice->estimation->workOrder->type_kendaraan ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">Serv.Advisor&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->service_advisor }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">Cust name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->workOrder->customer_name ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->estimationItems->first()->serviceRequest->user->name ?? '-' }}</p>
                 </div>
-            </div>
-
-            <div class="keluhan-section" style="font-weight: bold">
-                <p style="font-size: 15px; margin: 5px 0;">KELUHAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->keluhan ?? '-' }}</p>
             </div>
         </div>
         
-        <table>
+        <!-- Add a clear div to ensure the table starts after the info container -->
+        <div class="clear"></div>
+        
+        <table class="items-table">
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
@@ -175,8 +174,8 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($estimation->estimationItems as $index => $item)
-                <tr style="font-size: 15px">
+                @foreach($invoice->estimation->estimationItems as $index => $item)
+                <tr style="font-size: 12px">
                     <td style="text-align: center">{{ $loop->iteration }}</td>
                     <td style="text-align: left">{{ $item->serviceRequest->sparepart_name }}</td>
                     <td style="text-align: left">{{ $item->part_number ?? '-' }}</td>
@@ -189,26 +188,22 @@
             </tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="6" style="text-align: right; font-size: 12px "><strong>Grand Total</strong></td>
+                    <td colspan="6" style="text-align: right; font-size: 12px ">Grand Total</td>
                     <td style="text-align: right; font-size: 12px ">
-                        <strong>{{ number_format($estimation->estimationItems->sum('total'), 0, ',', '.') }}</strong>
+                        {{ number_format($invoice->total_amount, 0, ',', '.') }}
                     </td>
                 </tr>
             </tfoot>
         </table>
-        <div style="margin-top: 20px;">
-            <p style="font-size: 12px; font-style: italic;">Harga penawaran diatas Exclude (diluar PPN dan PPH) <br> <p style="font-size: 12px; ">Demikian Estimasi ini kami sampaikan atas perhatian dan kerjasamanya kami ucapkan terima kasih</p></p>
-            
-        </div>
+        
+            <p style="font-size: 12px;">Pembayaran dengan Cek/Giro harap diatas namakan Bandi Aslani, Bank BCA, A/C: 8055107871 <br>NO NPWP : 96.809.172.8-307.000 <br>A/N : CV.ARBELLA LEBAK SEJAHTERA</p>
+        
     </div>
 
     <div class="signature-section">
         <div class="signature-box">
-            <p style="font-size: 12px; margin-bottom: 40px;">Hormat Kami,</p>
-            <br>
-            <p style="font-size: 12px; margin-top: 5px;">Arbella Lebak Sejahtera</p>
-        </div><!--
-        
+            <p style="font-size: 12px; margin-bottom: 80px;">Bandi Aslani</p>
+        </div>
     </div>
 </body>
 </html> 

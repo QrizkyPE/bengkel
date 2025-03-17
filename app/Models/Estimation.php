@@ -48,4 +48,9 @@ class Estimation extends Model
     {
         return $this->estimationItems->first()->serviceRequest ?? null;
     }
+
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class);
+    }
 } 
