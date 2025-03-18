@@ -23,7 +23,7 @@ Auth::routes(['register' => false]); // Disable registration if not needed
 
 // Basic routes
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -320,5 +320,24 @@ Route::middleware(['auth'])->group(function () {
         }
         return app()->make('App\Http\Controllers\BillingController')->history();
     })->name('billing.history');
+
+    
+    Route::get('/billing/invoices', function() {
+        if (auth()->user()->role !== 'billing') {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        // Get only PENDING invoices 
+        $invoices = \App\Models\Invoice::with([
+            'estimation.estimationItems.serviceRequest',
+            'estimation.workOrder',
+            'creator'
+        ])
+        ->where('status', 'pending')  
+        ->orderBy('created_at', 'desc')
+        ->get();
+        
+        return view('billing.invoice', compact('invoices'));
+    })->name('billing.invoices.index');
 });
 

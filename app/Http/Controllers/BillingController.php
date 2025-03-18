@@ -97,8 +97,8 @@ class BillingController extends Controller
                 'notes' => $request->input('notes')
             ]);
             
-            return redirect()->route('billing.index')
-                ->with('success', 'Invoice marked as paid');
+            return redirect()->route('billing.history')
+                ->with('success', 'Invoice berhasil ditandai sebagai lunas');
         } catch (\Exception $e) {
             // Log the error
             \Log::error('Mark Invoice as Paid Error: ' . $e->getMessage());
@@ -141,5 +141,35 @@ class BillingController extends Controller
         ->get();
         
         return view('billing.history', compact('invoices'));
+    }
+    
+    public function updateInvoice(Request $request, $id)
+    {
+        try {
+            $invoice = Invoice::findOrFail($id);
+            
+            $validatedData = $request->validate([
+                'status' => 'required|in:pending,paid,cancelled',
+                'notes' => 'nullable|string',
+            ]);
+            
+            // Update paid_at date if status changed to paid
+            if ($validatedData['status'] == 'paid' && $invoice->status != 'paid') {
+                $validatedData['paid_at'] = now();
+            } elseif ($validatedData['status'] != 'paid') {
+                $validatedData['paid_at'] = null;
+            }
+            
+            $invoice->update($validatedData);
+            
+            return redirect()->route('billing.invoices.index')
+                ->with('success', 'Invoice updated successfully');
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Update Invoice Error: ' . $e->getMessage());
+            
+            // Return with error message
+            return back()->with('error', 'An error occurred while updating the invoice: ' . $e->getMessage());
+        }
     }
 } 

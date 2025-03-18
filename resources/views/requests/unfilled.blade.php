@@ -4,7 +4,7 @@
 <div class="container">
     <div class="row mb-3">
         <div class="col">
-            <h1>Daftar Work Order Belum Terisi</h1>
+            <h1>Daftar Work Order</h1>
         </div>
         <div class="col text-end">
             <a href="{{ route('work_orders.create') }}" class="btn btn-primary">
