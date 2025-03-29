@@ -113,10 +113,11 @@
                 const price = parseFloat(priceStr) || 0;
                 
                 const discount = parseFloat(discountInput.value) || 0;
-                const quantityText = row.querySelector('td:nth-child(3)').textContent.trim().split(' ')[0];
+                // Extract quantity from the fourth column (index 3)
+                const quantityText = row.querySelector('td:nth-child(4)').textContent.trim().split(' ')[0];
                 const quantity = parseInt(quantityText) || 1;
                 
-                // Calculate total without rounding
+                // Calculate total: price * quantity * (1 - discount/100)
                 const total = price * quantity * (1 - discount / 100);
                 grandTotal += total;
                 
@@ -130,7 +131,7 @@
         // Format number as Indonesian Rupiah (using commas)
         function formatRupiah(number) {
             // Format with commas for thousands
-            return Math.round(number).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return Math.round(number).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
         
         // Format input as Rupiah while typing
