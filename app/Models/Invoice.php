@@ -68,12 +68,17 @@ class Invoice extends Model
             $sequenceNumber = (int)$parts[1];
             $newSequenceNumber = $sequenceNumber + 1;
         } else {
-            // Start with 1 if no invoices exist for this year and month
-            $newSequenceNumber = 1;
+            // Start with custom sequence number if no invoices exist for this year and month
+            $startingSequenceNumber = 13558; // <-- CHANGE THIS VALUE to your desire
+            $newSequenceNumber = $startingSequenceNumber;
         }
         
-        // Format the sequence number with leading zeros (e.g., 001, 012, 123)
-        $formattedSequence = str_pad($newSequenceNumber, 3, '0', STR_PAD_LEFT);
+        // Format the sequence number with leading zeros if it's less than 1000, otherwise use as is
+        if ($newSequenceNumber < 1000) {
+            $formattedSequence = str_pad($newSequenceNumber, 3, '0', STR_PAD_LEFT);
+        } else {
+            $formattedSequence = (string)$newSequenceNumber;
+        }
         
         // Create the new invoice number with Roman numeral month
         return "INVA/$formattedSequence/$romanMonth/$year";
