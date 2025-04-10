@@ -20,7 +20,7 @@
                             <p><strong>Kilometer:</strong> {{ $estimation->workOrder->kilometer }}</p>
                             <p><strong>Tanggal:</strong> {{ $estimation->created_at->format('d/m/Y') }}</p>
                             <p><strong>Service Advisor:</strong> {{ $estimation->service_advisor }}</p>
-                            <p><strong>User:</strong> {{ $estimation->estimationItems->first()->serviceRequest->user->name ?? 'N/A' }}</p>
+                            <p><strong>Keluhan:</strong> {{ $estimation->workOrder->keluhan ?? '-' }}</p>
                         </div>
                     </div>
 
@@ -29,7 +29,7 @@
                             <thead>
                                 <tr style="text-align: center">
                                     <th style="width: 5%">No</th>
-                                    <th style="width: 20%">Item Pekerjaan</th>
+                                    <th style="width: 20%">Kebutuhan Part</th>
                                     <th style="width: 10%">QTY</th>
                                     <th style="width: 15%">Part Number</th>
                                     <th style="width: 15%">Harga Satuan</th>
@@ -129,6 +129,12 @@
                         <a href="{{ route('estimations.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Kembali
                         </a>
+                        
+                        @if($estimation->status === 'approved')
+                        <a href="{{ route('estimations.pdf', $estimation->id) }}" target="_blank" class="btn btn-primary">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </a>
+                        @endif
                     </div>
                 </div>
             </div>

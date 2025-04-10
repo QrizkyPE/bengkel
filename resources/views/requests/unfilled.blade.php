@@ -27,14 +27,28 @@
     </div>
     @endif
 
-    @if($workOrders->isNotEmpty())
-        @foreach($workOrders as $workOrder)
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h5 class="mb-0">
-                                Work Order #{{ $workOrder->no_spk }}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="workOrdersTable" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>No. SPK</th>
+                            <th>Customer</th>
+                            <th>No. Polisi</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($workOrders as $workOrder)
+                        <tr>
+                            <td>{{ $workOrder->no_spk }}</td>
+                            <td>{{ $workOrder->customer_name }}</td>
+                            <td>{{ $workOrder->no_polisi }}</td>
+                            <td>{{ $workOrder->created_at->format('d/m/Y') }}</td>
+                            <td>
                                 @php
                                     $hasEstimation = \App\Models\Estimation::where('work_order_id', $workOrder->id)->first();
                                     $status = 'Not sent';
@@ -51,72 +65,137 @@
                                         }
                                     }
                                 @endphp
-                                <span class="badge {{ $statusClass }} ms-2">{{ $status }}</span>
-                            </h5>
-                        </div>
-                        <div class="col-md-4 text-md-end">
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ route('requests.create', ['work_order' => $workOrder->id]) }}" class="btn btn-success">
-                                    <i class="fas fa-plus"></i> Sparepart
-                                </a>
-                                <form action="{{ route('requests.generatePDF') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                                    <button type="submit" class="btn btn-secondary">
-                                        <i class="fas fa-file-pdf"></i> PDF
+                                <span class="badge {{ $statusClass }}">{{ $status }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-info btn-detail" data-bs-toggle="modal" data-bs-target="#detailModal-{{ $workOrder->id }}">
+                                        <i class="fas fa-eye"></i>
                                     </button>
-                                </form>
-                                @php
-                                    $canSubmit = !$hasEstimation || $hasEstimation->status === 'rejected';
-                                @endphp
-                                @if($canSubmit)
-                                    <form action="{{ route('submit.to.estimator') }}" method="POST" class="d-inline">
+                                    <a href="{{ route('requests.create', ['work_order' => $workOrder->id]) }}" class="btn btn-success">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                    <form action="{{ route('requests.generatePDF') }}" method="POST" class="d-inline">
                                         @csrf
                                         <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-file-invoice-dollar"></i> Ajukan
+                                        <button type="submit" class="btn btn-secondary">
+                                            <i class="fas fa-file-pdf"></i>
                                         </button>
                                     </form>
-                                @endif
-                                <form action="{{ route('work_orders.destroy', $workOrder->id) }}" method="POST" class="delete-work-order-form d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger">
-                                        <i class="fas fa-trash"></i> Hapus
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+                                    @php
+                                        $canSubmit = !$hasEstimation || $hasEstimation->status === 'rejected';
+                                    @endphp
+                                    @if($canSubmit)
+                                        <form action="{{ route('submit.to.estimator') }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-file-invoice-dollar"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                    <form action="{{ route('work_orders.destroy', $workOrder->id) }}" method="POST" class="delete-work-order-form d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modals for Work Orders -->
+@foreach($workOrders as $workOrder)
+<div class="modal fade" id="detailModal-{{ $workOrder->id }}" tabindex="-1" aria-labelledby="detailModalLabel-{{ $workOrder->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel-{{ $workOrder->id }}">
+                    Work Order #{{ $workOrder->no_spk }}
+                    @php
+                        $hasEstimation = \App\Models\Estimation::where('work_order_id', $workOrder->id)->first();
+                        $status = 'Not sent';
+                        $statusClass = 'bg-secondary';
+                        
+                        if ($hasEstimation) {
+                            $status = ucfirst($hasEstimation->status);
+                            if ($hasEstimation->status == 'pending') {
+                                $statusClass = 'bg-warning';
+                            } elseif ($hasEstimation->status == 'approved') {
+                                $statusClass = 'bg-success';
+                            } elseif ($hasEstimation->status == 'rejected') {
+                                $statusClass = 'bg-danger';
+                            }
+                        }
+                    @endphp
+                    <span class="badge {{ $statusClass }} ms-2">{{ $status }}</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>No. Polisi:</strong> {{ $workOrder->no_polisi }}</p>
+                        <p class="mb-1"><strong>Kilometer:</strong> {{ $workOrder->kilometer }}</p>
+                        <p class="mb-1"><strong>Type Kendaraan:</strong> {{ $workOrder->type_kendaraan }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Customer:</strong> {{ $workOrder->customer_name }}</p>
+                        <p class="mb-1"><strong>Tanggal:</strong> {{ $workOrder->created_at->format('d/m/Y') }}</p>
+                        <p class="mb-1"><strong>Keluhan:</strong> {{ $workOrder->keluhan ?? '-' }}</p>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>No. Polisi:</strong> {{ $workOrder->no_polisi }}</p>
-                            <p class="mb-1"><strong>Kilometer:</strong> {{ $workOrder->kilometer }}</p>
-                            <p class="mb-1"><strong>Type Kendaraan:</strong> {{ $workOrder->type_kendaraan }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Customer:</strong> {{ $workOrder->customer_name }}</p>
-                            <p class="mb-1"><strong>Tanggal:</strong> {{ $workOrder->created_at->format('d/m/Y') }}</p>
-                            <p class="mb-1"><strong>Keluhan:</strong> {{ $workOrder->keluhan ?? '-' }}</p>
-                        </div>
-                    </div>
-                    <div class="alert alert-info">
-                        Belum ada permintaan sparepart untuk work order ini. <a href="{{ route('requests.create', ['work_order' => $workOrder->id]) }}" class="alert-link">Tambahkan sparepart sekarang</a>.
-                    </div>
+                
+                <div class="alert alert-info">
+                    Belum ada permintaan sparepart untuk work order ini. <a href="{{ route('requests.create', ['work_order' => $workOrder->id]) }}" class="alert-link">Tambahkan sparepart sekarang</a>.
                 </div>
             </div>
-        @endforeach
-    @else
-        <div class="alert alert-info">
-            Tidak ada work order yang belum terisi. <a href="{{ route('work_orders.create') }}" class="alert-link">Buat work order baru</a>.
+            <div class="modal-footer">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <a href="{{ route('requests.create', ['work_order' => $workOrder->id]) }}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Tambah Sparepart
+                    </a>
+                    @php
+                        $canSubmit = !$hasEstimation || $hasEstimation->status === 'rejected';
+                    @endphp
+                    @if($canSubmit)
+                        <form action="{{ route('submit.to.estimator') }}" method="POST" class="d-inline">
+                            @csrf
+                            <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-file-invoice-dollar"></i> Ajukan Estimasi
+                            </button>
+                        </form>
+                    @endif
+                    <form action="{{ route('work_orders.destroy', $workOrder->id) }}" method="POST" class="delete-work-order-form d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Hapus
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-    @endif
+    </div>
 </div>
+@endforeach
 
 @push('styles')
 <style>
+    .badge {
+        font-size: 0.8rem;
+    }
+    
     .table-responsive {
         margin-top: 1rem;
     }
@@ -124,35 +203,10 @@
     .table th {
         background-color: #f8f9fa;
         vertical-align: middle;
-        text-align: center;
     }
 
     .table td {
         vertical-align: middle;
-    }
-
-    .d-flex.gap-2 {
-        display: flex;
-        gap: 0.5rem !important;
-        justify-content: center;
-    }
-
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        min-width: 80px;
-    }
-
-    .card-header {
-        background-color: #f8f9fa;
-    }
-
-    .delete-work-order-form {
-        display: inline-block !important;
-    }
-    
-    .card-header .btn-sm {
-        margin-bottom: 5px;
-        display: inline-block;
     }
 
     .btn-group-sm .btn {
@@ -162,16 +216,21 @@
         border-radius: 0.2rem;
     }
 
-    .btn-group form {
-        display: inline-block;
-    }
-
     .btn-group .btn {
         margin-right: 2px;
     }
-
-    .btn-group form:last-child .btn {
-        margin-right: 0;
+    
+    /* DataTables customization */
+    div.dataTables_wrapper div.dataTables_info {
+        padding-top: 0.85em;
+    }
+    
+    div.dataTables_wrapper div.dataTables_paginate {
+        margin-top: 0.5em;
+    }
+    
+    div.dataTables_wrapper div.dataTables_length select {
+        width: 5em;
     }
 </style>
 @endpush
@@ -179,6 +238,31 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize DataTable
+        $('#workOrdersTable').DataTable({
+            responsive: true,
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data per halaman",
+                zeroRecords: "Tidak ada work order yang ditemukan",
+                info: "Menampilkan halaman _PAGE_ dari _PAGES_",
+                infoEmpty: "Tidak ada data tersedia",
+                infoFiltered: "(difilter dari _MAX_ total data)",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Selanjutnya",
+                    previous: "Sebelumnya"
+                }
+            },
+            order: [[3, 'desc']], // Sort by date column (index 3) in descending order
+            columnDefs: [
+                { responsivePriority: 1, targets: 0 }, // No. SPK has highest priority
+                { responsivePriority: 2, targets: 5 }, // Actions has second highest priority
+                { responsivePriority: 3, targets: 4 }  // Status has third highest priority
+            ]
+        });
+
         // Add confirmation dialog for delete work order buttons
         const deleteWorkOrderForms = document.querySelectorAll('.delete-work-order-form');
         deleteWorkOrderForms.forEach(form => {
@@ -191,7 +275,7 @@
         });
 
         // Auto-close alerts after 3 seconds
-        const alerts = document.querySelectorAll('.alert');
+        const alerts = document.querySelectorAll('.alert:not(.alert-info)');
         alerts.forEach(alert => {
             setTimeout(() => {
                 const closeButton = alert.querySelector('.btn-close');

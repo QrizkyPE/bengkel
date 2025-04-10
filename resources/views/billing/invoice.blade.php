@@ -22,37 +22,79 @@
     </div>
     @endif
 
-    @forelse($invoices as $invoice)
-        <div class="card mb-4">
-            <div class="card-header bg-light">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h5 class="mb-0">
-                            Work Order #{{ $invoice->estimation->workOrder->no_spk }}
-                            <span class="badge {{ $invoice->status == 'paid' ? 'bg-success' : 'bg-warning' }} ms-2">
-                                {{ $invoice->status == 'paid' ? 'Lunas' : 'Belum Lunas' }}
-                            </span>
-                        </h5>
-                    </div>
-                    <div class="col-md-4 text-md-end">
-                        <div class="btn-group btn-group-sm">
-                            <form action="{{ route('billing.generate.pdf', $invoice->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-secondary">
-                                    <i class="fas fa-file-pdf"></i> PDF
-                                </button>
-                            </form>
-                            
-                            @if($invoice->status == 'pending')
-                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#paidModal{{ $invoice->id }}">
-                                    <i class="fas fa-check"></i> Tandai Lunas
-                                </button>
-                            @endif
-                        </div>
-                    </div>
-                </div>
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="invoicesTable" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>No. Invoice</th>
+                            <th>No. SPK</th>
+                            <th>Customer</th>
+                            <th>Tanggal</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($invoices as $invoice)
+                        <tr>
+                            <td>{{ $invoice->invoice_number }}</td>
+                            <td>{{ $invoice->estimation->workOrder->no_spk }}</td>
+                            <td>{{ $invoice->estimation->workOrder->customer_name }}</td>
+                            <td>{{ $invoice->created_at->format('d/m/Y') }}</td>
+                            <td data-order="{{ $invoice->total_amount }}">
+                                {{ number_format($invoice->total_amount, 0, ',', '.') }}
+                            </td>
+                            <td>
+                                <span class="badge {{ $invoice->status == 'paid' ? 'bg-success' : 'bg-warning' }}">
+                                    {{ $invoice->status == 'paid' ? 'Lunas' : 'Belum Lunas' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-info btn-detail" data-bs-toggle="modal" data-bs-target="#detailModal-{{ $invoice->id }}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <form action="{{ route('billing.generate.pdf', $invoice->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-secondary">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </button>
+                                    </form>
+                                    
+                                    @if($invoice->status == 'pending')
+                                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#paidModal{{ $invoice->id }}">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-            <div class="card-body">
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modals -->
+@foreach($invoices as $invoice)
+<div class="modal fade" id="detailModal-{{ $invoice->id }}" tabindex="-1" aria-labelledby="detailModalLabel-{{ $invoice->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailModalLabel-{{ $invoice->id }}">
+                    Work Order #{{ $invoice->estimation->workOrder->no_spk }}
+                    <span class="badge {{ $invoice->status == 'paid' ? 'bg-success' : 'bg-warning' }} ms-2">
+                        {{ $invoice->status == 'paid' ? 'Lunas' : 'Belum Lunas' }}
+                    </span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <p class="mb-1"><strong>No. Polisi:</strong> {{ $invoice->estimation->workOrder->no_polisi }}</p>
@@ -122,54 +164,67 @@
                 </div>
                 @endif
             </div>
-        </div>
-
-        <!-- Mark as Paid Modal -->
-        <div class="modal fade" id="paidModal{{ $invoice->id }}" tabindex="-1" aria-labelledby="paidModalLabel{{ $invoice->id }}" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form action="{{ route('billing.mark.paid', $invoice->id) }}" method="POST">
+            <div class="modal-footer">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <form action="{{ route('billing.generate.pdf', $invoice->id) }}" method="POST" class="d-inline">
                         @csrf
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title" id="paidModalLabel{{ $invoice->id }}">
-                                Tandai Invoice {{ $invoice->invoice_number }} sebagai Lunas
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <label for="notes{{ $invoice->id }}" class="form-label">Catatan Pembayaran (Opsional)</label>
-                                <textarea class="form-control" id="notes{{ $invoice->id }}" name="notes" rows="3" placeholder="Masukkan catatan pembayaran jika ada"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-check-circle"></i> Tandai Lunas
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </button>
                     </form>
+                    
+                    @if($invoice->status == 'pending')
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#paidModal{{ $invoice->id }}">
+                            <i class="fas fa-check-circle"></i> Tandai Lunas
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
-    @empty
-        <div class="alert alert-info">
-            Belum ada invoice yang dibuat.
-        </div>
-    @endforelse
+    </div>
 </div>
+
+<!-- Mark as Paid Modal -->
+<div class="modal fade" id="paidModal{{ $invoice->id }}" tabindex="-1" aria-labelledby="paidModalLabel{{ $invoice->id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('billing.mark.paid', $invoice->id) }}" method="POST">
+                @csrf
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="paidModalLabel{{ $invoice->id }}">
+                        Tandai Invoice {{ $invoice->invoice_number }} sebagai Lunas
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="notes{{ $invoice->id }}" class="form-label">Catatan Pembayaran (Opsional)</label>
+                        <textarea class="form-control" id="notes{{ $invoice->id }}" name="notes" rows="3" placeholder="Masukkan catatan pembayaran jika ada"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle"></i> Tandai Lunas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 @push('styles')
 <style>
-    .card {
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    .badge {
+        font-size: 0.8rem;
     }
     
-    .card-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #dee2e6;
+    .table-responsive {
+        margin-top: 1rem;
     }
-
+    
     .table th {
         background-color: #f8f9fa;
         vertical-align: middle;
@@ -182,16 +237,21 @@
         border-radius: 0.2rem;
     }
 
-    .btn-group form {
-        display: inline-block;
-    }
-
     .btn-group .btn {
         margin-right: 2px;
     }
-
-    .btn-group form:last-child .btn {
-        margin-right: 0;
+    
+    /* DataTables customization */
+    div.dataTables_wrapper div.dataTables_info {
+        padding-top: 0.85em;
+    }
+    
+    div.dataTables_wrapper div.dataTables_paginate {
+        margin-top: 0.5em;
+    }
+    
+    div.dataTables_wrapper div.dataTables_length select {
+        width: 5em;
     }
     
     .modal-header .btn-close-white {
@@ -203,6 +263,31 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize DataTable
+        $('#invoicesTable').DataTable({
+            responsive: true,
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data per halaman",
+                zeroRecords: "Tidak ada invoice yang ditemukan",
+                info: "Menampilkan halaman _PAGE_ dari _PAGES_",
+                infoEmpty: "Tidak ada data tersedia",
+                infoFiltered: "(difilter dari _MAX_ total data)",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Selanjutnya",
+                    previous: "Sebelumnya"
+                }
+            },
+            order: [[3, 'desc']], // Sort by date column (index 3) in descending order
+            columnDefs: [
+                { responsivePriority: 1, targets: 0 }, // Invoice number has highest priority
+                { responsivePriority: 2, targets: 6 }, // Actions has second highest priority
+                { responsivePriority: 3, targets: 5 }  // Status has third highest priority
+            ]
+        });
+
         // Auto-close alerts after 3 seconds
         const alerts = document.querySelectorAll('.alert');
         alerts.forEach(alert => {
@@ -217,3 +302,4 @@
 </script>
 @endpush
 @endsection
+

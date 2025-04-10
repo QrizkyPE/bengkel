@@ -16,7 +16,7 @@ class ServiceRequest extends Model
         'work_order_id',
         'sparepart_name',
         'quantity',
-        'satuan', //
+        'satuan',
         'kebutuhan_part',
         'keterangan',
         'no_spk',

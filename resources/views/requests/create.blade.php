@@ -9,7 +9,7 @@
                     <h4 class="mb-0">Buat Permintaan Sparepart</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('requests.store') }}" method="POST">
+                    <form action="{{ route('requests.store') }}" method="POST" id="createForm">
                         @csrf
                         
                         @if(request()->has('work_order'))
@@ -84,7 +84,7 @@
                             <a href="{{ route('requests.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Kembali
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
                                 <i class="fas fa-save"></i> Simpan
                             </button>
                         </div>
@@ -115,5 +115,38 @@
         padding: 0.5rem 1.5rem;
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('createForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Disable the submit button to prevent double submission
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            
+            // Check required fields
+            const sparepart_name = document.getElementById('sparepart_name').value;
+            const quantity = document.getElementById('quantity').value;
+            const satuan = document.getElementById('satuan').value;
+            
+            if (!sparepart_name || !quantity || !satuan) {
+                alert('Harap isi semua field yang wajib diisi');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Simpan';
+                return;
+            }
+            
+            // Submit the form
+            console.log('Submitting form...');
+            this.submit();
+        });
+    });
+</script>
 @endpush
 @endsection

@@ -279,6 +279,14 @@ Route::post('/estimator/estimations/{id}/pdf', function($id) {
     return app()->make('App\Http\Controllers\EstimationController')->generatePDF(request(), $id);
 })->middleware('auth');
 
+// Add a GET route for direct PDF access
+Route::get('/estimator/estimations/{id}/pdf', function($id) {
+    if (auth()->user()->role !== 'estimator' && auth()->user()->role !== 'service') {
+        abort(403, 'Unauthorized action.');
+    }
+    return app()->make('App\Http\Controllers\EstimationController')->generatePDF(request(), $id);
+})->name('estimations.pdf')->middleware('auth');
+
 // Billing routes
 Route::middleware(['auth'])->group(function () {
     // Billing index

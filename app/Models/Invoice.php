@@ -33,11 +33,11 @@ class Invoice extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // Generate a new invoice number
+    // Generate invoice number
     public static function generateInvoiceNumber()
     {
         $year = date('Y');
-        $month = date('n'); // Current month as a number (1-12)
+        $month = date('n'); 
         
         // Convert month to Roman numeral
         $romanMonths = [
@@ -57,30 +57,30 @@ class Invoice extends Model
         
         $romanMonth = $romanMonths[$month];
         
-        // Get the latest invoice for the current year and month
+        // Year and month
         $latestInvoice = self::where('invoice_number', 'like', "INVA/%/$romanMonth/$year")
             ->orderBy('id', 'desc')
             ->first();
         
         if ($latestInvoice) {
-            // Extract the sequence number from the latest invoice
+            // Sequence number from the latest invoice
             $parts = explode('/', $latestInvoice->invoice_number);
             $sequenceNumber = (int)$parts[1];
             $newSequenceNumber = $sequenceNumber + 1;
         } else {
-            // Start with custom sequence number if no invoices exist for this year and month
-            $startingSequenceNumber = 13558; // <-- CHANGE THIS VALUE to your desire
+    
+            $startingSequenceNumber = 13558; // <-- Start number
             $newSequenceNumber = $startingSequenceNumber;
         }
         
-        // Format the sequence number with leading zeros if it's less than 1000, otherwise use as is
+        // Format number
         if ($newSequenceNumber < 1000) {
             $formattedSequence = str_pad($newSequenceNumber, 3, '0', STR_PAD_LEFT);
         } else {
             $formattedSequence = (string)$newSequenceNumber;
         }
         
-        // Create the new invoice number with Roman numeral month
+        // Create invoice with month and year format
         return "INVA/$formattedSequence/$romanMonth/$year";
     }
 } 
