@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\WorkOrderController;
 use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\AdminController;
 
 // Add this at the top of your routes file, after the <?php line
 error_reporting(E_ALL);
@@ -89,6 +90,77 @@ Route::get('/debug-estimation-full/{id}', function($id) {
 
 // Protected routes
 Route::group(['middleware' => 'auth'], function() {
+    // Admin routes
+    Route::group(['prefix' => 'admin'], function() {
+        Route::get('/dashboard', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->dashboard();
+        })->name('admin.dashboard');
+        
+        // Admin can access all work orders
+        Route::get('/work-orders', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->allWorkOrders();
+        })->name('admin.work-orders');
+        
+        // Admin can view work order details
+        Route::get('/work-orders/{id}', function($id) {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->showWorkOrder($id);
+        })->name('admin.work-orders.show');
+        
+        // Admin can access all estimations
+        Route::get('/estimations', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->allEstimations();
+        })->name('admin.estimations');
+        
+        // Admin can access all invoices
+        Route::get('/invoices', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->allInvoices();
+        })->name('admin.invoices');
+        
+        // Admin can manage users
+        Route::get('/users', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->users();
+        })->name('admin.users');
+        
+        Route::post('/users', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->storeUser(request());
+        })->name('admin.users.store');
+        
+        Route::put('/users/{id}', function($id) {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->updateUser(request(), $id);
+        })->name('admin.users.update');
+        
+        Route::delete('/users/{id}', function($id) {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->deleteUser($id);
+        })->name('admin.users.delete');
+    });
+    
     // Service routes
     Route::group(['prefix' => 'service'], function() {
         Route::get('/requests', function() {

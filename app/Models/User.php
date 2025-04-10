@@ -16,7 +16,7 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
@@ -47,6 +47,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Define valid roles
+    const ROLES = [
+        'admin',      // Administrator with full access
+        'service',    // Service user for creating requests
+        'estimator',  // Estimator for approving/rejecting
+        'billing',    // Billing for creating invoices
+    ];
 
     public function hasRole($role)
     {

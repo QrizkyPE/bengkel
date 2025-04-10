@@ -38,11 +38,11 @@ class UserSeeder extends Seeder
         // ]);
 
         // Billing user
-        User::create([
-            'name' => 'Billing',
-            'email' => 'billing@bengkel.com',
-            'password' => bcrypt('password'),
-            'role' => 'billing',
-        ]);
+        // User::create([
+        //     'name' => 'Billing',
+        //     'email' => 'billing@bengkel.com',
+        //     'password' => bcrypt('password'),
+        //     'role' => 'billing',
+        // ]);
     }
 }

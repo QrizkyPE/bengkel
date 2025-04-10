@@ -376,10 +376,38 @@
                     <div id="sidebar" class="sidebar">
                         <div class="position-sticky">
                             <ul class="nav flex-column">
+                                @if(auth()->user()->role === 'admin')
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.work-orders*') ? 'active' : '' }}" href="{{ route('admin.work-orders') }}">
+                                            <i class="fas fa-clipboard-list"></i> All Work Orders
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.estimations') ? 'active' : '' }}" href="{{ route('admin.estimations') }}">
+                                            <i class="fas fa-calculator"></i> All Estimations
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.invoices') ? 'active' : '' }}" href="{{ route('admin.invoices') }}">
+                                            <i class="fas fa-file-invoice-dollar"></i> All Invoices
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}" href="{{ route('admin.users') }}">
+                                            <i class="fas fa-users"></i> User Management
+                                        </a>
+                                    </li>
+                                @endif
+
                                 @if(auth()->user()->role === 'service')
                                     <li class="nav-item">
-                                        <a class="nav-link {{ request()->routeIs('requests.*') ? 'active' : '' }}" href="{{ route('requests.index') }}">
-                                            <i class="fas fa-clipboard-list"></i> <span>Work Orders</span>
+                                        <a class="nav-link {{ request()->routeIs('requests.index') ? 'active' : '' }}" href="{{ route('requests.index') }}">
+                                            <i class="fas fa-home"></i> Home
                                         </a>
                                     </li>
                                     <li class="nav-item">

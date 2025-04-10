@@ -383,7 +383,7 @@
                     previous: "Sebelumnya"
                 }
             },
-            order: [[4, 'desc']], // Sort by date column in descending order
+            order: [[4, 'desc']], // Sort by date column descending order
             columnDefs: [
                 { responsivePriority: 1, targets: 0 }, // No. SPK has highest priority
                 { responsivePriority: 2, targets: 5 }, // Actions has second highest priority
