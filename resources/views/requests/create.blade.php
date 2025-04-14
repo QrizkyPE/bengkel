@@ -45,12 +45,15 @@
 
                         <div class="mb-3">
                             <label for="satuan" class="form-label">Satuan</label>
-                            <input type="text" 
-                                class="form-control @error('satuan') is-invalid @enderror" 
+                            <select class="form-select @error('satuan') is-invalid @enderror" 
                                 id="satuan" 
                                 name="satuan" 
-                                value="{{ old('satuan') }}" 
                                 required>
+                                <option value="" disabled {{ old('satuan') ? '' : 'selected' }}>Pilih Satuan</option>
+                                <option value="PCS" {{ old('satuan') == 'PCS' ? 'selected' : '' }}>PCS</option>
+                                <option value="BH" {{ old('satuan') == 'BH' ? 'selected' : '' }}>BH</option>
+                                <option value="LT" {{ old('satuan') == 'LT' ? 'selected' : '' }}>LT</option>
+                            </select>
                             @error('satuan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
