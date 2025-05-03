@@ -46,4 +46,19 @@ class LoginController extends Controller
         
         return redirect('/home');
     }
+
+    /**
+     * Get failed login response instance.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        return redirect()->back()
+            ->withInput($request->only($this->username(), 'remember'))
+            ->withErrors([
+                $this->username() => 'Email or password is incorrect.',
+            ]);
+    }
 }

@@ -38,7 +38,7 @@ Route::get('/debug', function() {
     ]);
 });
 
-// Add this route at the top of your routes (after middleware definitions)
+
 Route::get('/debug-role', function () {
     dd([
         'user' => auth()->user(),
@@ -47,7 +47,7 @@ Route::get('/debug-role', function () {
     ]);
 })->middleware('auth');
 
-// Add this debug route
+//  debug route
 Route::get('/debug-estimation/{id}', function($id) {
     $estimation = \App\Models\Estimation::with('serviceRequest')->findOrFail($id);
     dd([
@@ -57,7 +57,7 @@ Route::get('/debug-estimation/{id}', function($id) {
     ]);
 })->middleware('auth');
 
-// Add this more detailed debug route
+// Detailed debug route
 Route::get('/debug-estimation-full/{id}', function($id) {
     $estimation = \App\Models\Estimation::find($id);
     
@@ -186,7 +186,7 @@ Route::group(['middleware' => 'auth'], function() {
             return app()->make('App\Http\Controllers\ServiceRequestController')->store(request());
         })->name('requests.store');
         
-        // Add the edit route
+        // Add edit route
         Route::get('/requests/{request}/edit', function($request) {
             if (auth()->user()->role !== 'service') {
                 abort(403, 'Unauthorized action.');
@@ -194,7 +194,7 @@ Route::group(['middleware' => 'auth'], function() {
             return app()->make('App\Http\Controllers\ServiceRequestController')->edit($request);
         })->name('requests.edit');
         
-        // Add the update route
+        // Add update route
         Route::put('/requests/{request}', function($request) {
             if (auth()->user()->role !== 'service') {
                 abort(403, 'Unauthorized action.');
@@ -202,7 +202,7 @@ Route::group(['middleware' => 'auth'], function() {
             return app()->make('App\Http\Controllers\ServiceRequestController')->update(request(), $request);
         })->name('requests.update');
         
-        // Add the show route
+        // Add show route
         Route::get('/requests/{request}', function($request) {
             if (auth()->user()->role !== 'service') {
                 abort(403, 'Unauthorized action.');
@@ -212,7 +212,7 @@ Route::group(['middleware' => 'auth'], function() {
             );
         })->name('requests.show');
         
-        // Add the delete route
+        // Add delete route
         Route::delete('/requests/{request}', function($request) {
             if (auth()->user()->role !== 'service') {
                 abort(403, 'Unauthorized action.');
@@ -222,7 +222,7 @@ Route::group(['middleware' => 'auth'], function() {
             );
         })->name('requests.destroy');
         
-        // Add this route for submitting to estimator
+        // Add Route for submitting to estimator
         Route::post('/service/requests/submit-to-estimator', function() {
             if (auth()->user()->role !== 'service') {
                 abort(403, 'Unauthorized action.');
@@ -230,7 +230,7 @@ Route::group(['middleware' => 'auth'], function() {
             return app()->make('App\Http\Controllers\ServiceRequestController')->submitToEstimator(request());
         })->name('submit.to.estimator')->middleware('auth');
 
-        // Add this route for unfilled work orders
+        // Add Route for unfilled work orders
         Route::get('/unfilled-work-orders', function() {
             if (auth()->user()->role !== 'service') {
                 abort(403, 'Unauthorized action.');
@@ -238,7 +238,7 @@ Route::group(['middleware' => 'auth'], function() {
             return app()->make('App\Http\Controllers\ServiceRequestController')->unfilledWorkOrders();
         })->name('unfilled.work.orders')->middleware('auth');
 
-        // Add this route for work order history
+        // Add Route for work order history
         Route::get('/service/work-orders/history', function() {
             if (auth()->user()->role !== 'service') {
                 abort(403, 'Unauthorized action.');
@@ -327,10 +327,10 @@ Route::delete('/work_orders/{workOrder}', [WorkOrderController::class, 'destroy'
 
 Route::resource('work_orders', WorkOrderController::class);
 
-// Add this new route for GET requests
+// Add GET requests
 Route::get('/requests/pdf/{work_order_id}', [ServiceRequestController::class, 'generatePDF'])->name('requests.generatePDF.get');
 
-// Alternative approach using controller method directly
+// Alternative controller method directly
 Route::post('/estimator/estimations/{id}/approve', [App\Http\Controllers\EstimationController::class, 'approveEstimation'])
     ->name('estimations.approve.direct')
     ->middleware('auth');
@@ -420,4 +420,9 @@ Route::middleware(['auth'])->group(function () {
         return view('billing.invoice', compact('invoices'));
     })->name('billing.invoices.index');
 });
+
+// Add route for resetting password
+Route::post('/reset-password', [App\Http\Controllers\AuthController::class, 'resetPassword'])
+    ->name('reset.password')
+    ->middleware('auth');
 

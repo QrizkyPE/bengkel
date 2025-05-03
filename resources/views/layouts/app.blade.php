@@ -299,6 +299,27 @@
     </style>
 </head>
 <body>
+    {{-- <script>
+        // Diagnostic script to check if required libraries are loaded
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DIAGNOSTIC: DOMContentLoaded fired');
+            console.log('DIAGNOSTIC: jQuery available?', typeof jQuery !== 'undefined');
+            console.log('DIAGNOSTIC: Bootstrap available?', typeof bootstrap !== 'undefined');
+            
+            // Check if modal functionality works
+            setTimeout(function() {
+                console.log('DIAGNOSTIC: Bootstrap Modal available?', typeof bootstrap.Modal !== 'undefined');
+                console.log('DIAGNOSTIC: resetPasswordModal element exists?', !!document.getElementById('resetPasswordModal'));
+                
+                // Add global click handler to debug button clicking
+                document.addEventListener('click', function(e) {
+                    if (e.target.id === 'resetPasswordSubmit' || e.target.closest('#resetPasswordSubmit')) {
+                        console.log('DIAGNOSTIC: Reset button clicked via global handler');
+                    }
+                });
+            }, 1000);
+        });
+    </script> --}}
     <div id="app">
         @if(!request()->routeIs('login') && !request()->routeIs('password.request') && !request()->routeIs('password.reset'))
         <nav class="navbar navbar-expand-md navbar-light">
@@ -350,6 +371,9 @@
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end">
                                     <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
+                                        <i class="fas fa-key me-1"></i> Reset Password
+                                    </a>
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
@@ -586,5 +610,235 @@
         </script>
         @endif
     @endauth
+
+    <!-- Reset Password Modal -->
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resetPasswordModalLabel">Reset Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="resetPasswordAlert" class="alert d-none" role="alert">
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <div id="resetPasswordMessage"></div>
+                    </div>
+                    <form id="resetPasswordForm" method="POST" action="{{ route('reset.password') }}">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                            <div class="invalid-feedback" id="current_password_error"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                            <div class="invalid-feedback" id="new_password_error"></div>
+                            <div class="form-text">Password must be at least 8 characters long and different from current password.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password_confirmation" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="new_password_confirmation" name="new_password_confirmation" required>
+                            <div class="invalid-feedback" id="new_password_confirmation_error"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="resetPasswordSubmit">Reset Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    @endpush
+
+    <!-- Standalone Reset Password Script -->
+    <script>
+        // Wait for document to fully load
+        window.addEventListener('load', function() {
+            // console.log('Window loaded - initializing reset password functionality');
+            
+            // Get elements
+            const resetBtn = document.getElementById('resetPasswordSubmit');
+            const resetForm = document.getElementById('resetPasswordForm');
+            const currentPasswordInput = document.getElementById('current_password');
+            const newPasswordInput = document.getElementById('new_password');
+            const confirmPasswordInput = document.getElementById('new_password_confirmation');
+            const resetAlert = document.getElementById('resetPasswordAlert');
+            const resetMessage = document.getElementById('resetPasswordMessage');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const resetModal = document.getElementById('resetPasswordModal');
+            
+            // Log element detection
+            // console.log('Reset password elements found:', {
+            //     resetBtn: !!resetBtn,
+            //     resetForm: !!resetForm,
+            //     currentPasswordInput: !!currentPasswordInput,
+            //     newPasswordInput: !!newPasswordInput,
+            //     confirmPasswordInput: !!confirmPasswordInput,
+            //     resetAlert: !!resetAlert,
+            //     resetMessage: !!resetMessage,
+            //     csrfToken: !!csrfToken,
+            //     resetModal: !!resetModal
+            // });
+            
+            if (!resetBtn || !resetForm) {
+                console.error('Critical reset password elements not found!');
+                return;
+            }
+            
+            // Clear form on modal hide
+            if (resetModal) {
+                resetModal.addEventListener('hidden.bs.modal', function() {
+                    resetForm.reset();
+                    hideAlert();
+                    clearValidationErrors();
+                });
+            }
+            
+            // Password match validation
+            if (newPasswordInput && confirmPasswordInput) {
+                [newPasswordInput, confirmPasswordInput].forEach(input => {
+                    input.addEventListener('input', validatePasswordMatch);
+                });
+            }
+            
+            // Submit button click handler
+            resetBtn.addEventListener('click', function() {
+                console.log('Reset button clicked!');
+                submitResetForm();
+            });
+            
+            // Functions
+            function validatePasswordMatch() {
+                if (newPasswordInput.value !== confirmPasswordInput.value) {
+                    confirmPasswordInput.setCustomValidity("Passwords don't match");
+                } else {
+                    confirmPasswordInput.setCustomValidity('');
+                }
+            }
+            
+            function clearValidationErrors() {
+                const invalidElements = resetForm.querySelectorAll('.is-invalid');
+                const errorMessages = resetForm.querySelectorAll('.invalid-feedback');
+                
+                invalidElements.forEach(el => el.classList.remove('is-invalid'));
+                errorMessages.forEach(el => el.textContent = '');
+            }
+            
+            function showAlert(type, message) {
+                resetAlert.classList.remove('d-none', 'alert-success', 'alert-danger');
+                resetAlert.classList.add(`alert-${type}`);
+                resetMessage.textContent = message;
+            }
+            
+            function hideAlert() {
+                resetAlert.classList.add('d-none');
+            }
+            
+            function submitResetForm() {
+                // Validate form
+                if (!resetForm.checkValidity()) {
+                    resetForm.reportValidity();
+                    return;
+                }
+                
+                // Show loading state
+                resetBtn.disabled = true;
+                resetBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                
+                // Clear previous errors
+                clearValidationErrors();
+                
+                // Collect form data
+                const formData = new FormData(resetForm);
+                
+                // Log form data for debugging
+                const formDataObject = {};
+                formData.forEach((value, key) => {
+                    formDataObject[key] = key.includes('password') ? '******' : value;
+                });
+                console.log('Submitting form data:', formDataObject);
+                
+                // Create serialized data as fallback
+                const urlEncodedData = new URLSearchParams(formData).toString();
+                
+                // Send fetch request
+                fetch(resetForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: urlEncodedData
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    // Parse JSON regardless of status code to get validation errors
+                    return response.json().then(data => ({
+                        status: response.status,
+                        body: data
+                    }));
+                })
+                .then(({ status, body }) => {
+                    console.log('Response data received:', body);
+                    
+                    if (status === 200 && body.success) {
+                        // Success case
+                        showAlert('success', body.success);
+                        
+                        // Show success alert box
+                        alert('Password has been reset successfully!');
+                        
+                        // Close modal after delay
+                        setTimeout(() => {
+                            const bsModal = bootstrap.Modal.getInstance(resetModal);
+                            if (bsModal) {
+                                bsModal.hide();
+                            }
+                        }, 300);
+                    } else if (status === 422 && body.errors) {
+                        // Validation errors
+                        showAlert('danger', 'Please correct the errors below.');
+                        
+                        // Display each validation error
+                        Object.entries(body.errors).forEach(([field, messages]) => {
+                            const input = document.getElementById(field);
+                            const errorDisplay = document.getElementById(`${field}_error`);
+                            
+                            if (input && errorDisplay) {
+                                input.classList.add('is-invalid');
+                                errorDisplay.textContent = messages[0];
+                                
+                                // If it's a current password error, also show an alert
+                                if (field === 'current_password') {
+                                    alert('Current password is incorrect!');
+                                }
+                            }
+                        });
+                    } else {
+                        // Unexpected response format
+                        showAlert('danger', 'An unexpected error occurred.');
+                        alert('An error occurred while resetting your password.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during form submission:', error);
+                    showAlert('danger', 'Failed to reset password. Please try again.');
+                    alert('Failed to reset password. Please try again.');
+                })
+                .finally(() => {
+                    // Reset button state
+                    resetBtn.disabled = false;
+                    resetBtn.textContent = 'Reset Password';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
