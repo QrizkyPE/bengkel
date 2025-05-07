@@ -151,9 +151,9 @@
                 <div class="info-right" style="font-weight: bold">
                     <p style="font-size: 15px; margin: 5px 0;">ESTIMASI PERBAIKAN KENDARAAN</p>
                     <p style="font-size: 15px; margin: 5px 0;">Type Kend.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ $estimation->workOrder->type_kendaraan ?? '-' }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">Serv.Advisor&nbsp;&nbsp;&nbsp;&nbsp;: {{ auth()->user()->name }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">Serv.Advisor&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->service_advisor }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">Cust name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->customer_name ?? '-' }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->estimationItems->first()->serviceRequest->user->name ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $estimation->workOrder->service_user }}</p>
                 </div>
             </div>
 

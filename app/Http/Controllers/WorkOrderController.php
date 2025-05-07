@@ -22,11 +22,15 @@ class WorkOrderController extends Controller
     {
         $validatedData = $request->validate([
             'no_polisi' => 'required|string',
-            'kilometer' => 'required|numeric',
-            'no_spk' => 'required|string',
+            'kilometer' => 'required|integer',
+            'no_spk' => 'required|string|unique:work_orders',
             'type_kendaraan' => 'required|string',
             'customer_name' => 'required|string',
             'keluhan' => 'nullable|string',
+            'service_advisor' => 'required|string',
+            'service_user' => 'required|string',
+            // 'no_spk' => 'required|string',
+            
         ]);
         
         // Add the user_id to the validated data

@@ -25,9 +25,8 @@
                             <div class="col-md-6">
                                 <p><strong>Kilometer:</strong> {{ $estimation->workOrder->kilometer }}</p>
                                 <p><strong>Tanggal:</strong> {{ $estimation->created_at->format('d/m/Y') }}</p>
-                                
-                                <p><strong>Service Advisor:</strong> {{ auth()->user()->name }}</p>
-                                <p><strong>User:</strong> {{ $estimation->estimationItems->first()->serviceRequest->user->name ?? 'N/A' }}</p>
+                                <p><strong>Service Advisor:</strong> {{ $estimation->workOrder->service_advisor }}</p>
+                                <p><strong>User:</strong> {{ $estimation->workOrder->service_user }}</p>
                             </div>
                         </div>
 

@@ -102,7 +102,15 @@
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <input type="password" 
+                               class="form-control" 
+                               id="password" 
+                               name="password" 
+                               minlength="8" 
+                               required>
+                        <div class="form-text text-muted">
+                            Password must be at least 8 characters long
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="role" class="form-label">Role</label>
@@ -147,8 +155,14 @@
                     </div>
                     <div class="mb-3">
                         <label for="edit_password_{{ $user->id }}" class="form-label">Password (leave blank to keep current)</label>
-                        <input type="password" class="form-control" id="edit_password_{{ $user->id }}" name="password">
-                        <small class="text-muted">Leave empty if you don't want to change the password</small>
+                        <input type="password" 
+                               class="form-control" 
+                               id="edit_password_{{ $user->id }}" 
+                               name="password"
+                               minlength="8">
+                        <div class="form-text text-muted">
+                            Leave empty if you don't want to change the password. If changing, password must be at least 8 characters long.
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="edit_role_{{ $user->id }}" class="form-label">Role</label>

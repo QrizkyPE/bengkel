@@ -100,13 +100,13 @@
                         <p class="mb-1"><strong>No. Polisi:</strong> {{ $invoice->estimation->workOrder->no_polisi }}</p>
                         <p class="mb-1"><strong>Kilometer:</strong> {{ $invoice->estimation->workOrder->kilometer }}</p>
                         <p class="mb-1"><strong>Type Kendaraan:</strong> {{ $invoice->estimation->workOrder->type_kendaraan }}</p>
-                        <p><strong>User:</strong> {{ $invoice->estimation->estimationItems->first()->serviceRequest->user->name ?? 'N/A' }}</p>
+                        <p><strong>User:</strong> {{ $invoice->estimation->workOrder->service_user }}</p>
                     </div>
                     <div class="col-md-6">
                         <p class="mb-1"><strong>INVOICE:</strong> <span class="text-primary fw-bold">{{ $invoice->invoice_number }}</span></p>
                         <p class="mb-1"><strong>Customer:</strong> {{ $invoice->estimation->workOrder->customer_name }}</p>
                         <p class="mb-1"><strong>Tanggal:</strong> {{ $invoice->created_at->format('d/m/Y') }}</p>
-                        <p class="mb-1"><strong>Service Advisor:</strong> {{ $invoice->estimation->service_advisor }}</p>
+                        <p class="mb-1"><strong>Service Advisor:</strong> {{ $invoice->estimation->workOrder->service_advisor }}</p>
                     </div>
                 </div>
 

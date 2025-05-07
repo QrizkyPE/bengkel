@@ -43,7 +43,7 @@
                         <tr>
                             <td>{{ $estimation->workOrder->no_spk ?? 'N/A' }}</td>
                             <td>{{ $estimation->workOrder->customer_name ?? 'N/A' }}</td>
-                            <td>{{ $estimation->service_advisor }}</td>
+                            <td>{{ $estimation->workOrder->service_advisor ?? 'N/A' }}</td>
                             <td>{{ $estimation->created_at->format('d/m/Y') }}</td>
                             <td class="text-end">
                                 {{ number_format($estimation->estimationItems->sum('total'), 0, ',', '.') }}
@@ -68,7 +68,7 @@
                                     <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#detailModal-{{ $estimation->id }}">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <a href="{{ route('estimations.pdf', ['id' => $estimation->id]) }}" class="btn btn-secondary">
+                                    <a href="{{ route('admin.estimations.pdf', ['id' => $estimation->id]) }}" class="btn btn-secondary">
                                         <i class="fas fa-file-pdf"></i>
                                     </a>
                                 </div>
@@ -111,13 +111,14 @@
                         <p class="mb-1"><strong>No. Polisi:</strong> {{ $estimation->workOrder->no_polisi ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Kilometer:</strong> {{ $estimation->workOrder->kilometer ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Type Kendaraan:</strong> {{ $estimation->workOrder->type_kendaraan ?? 'N/A' }}</p>
-                        <p class="mb-1"><strong>Service Advisor:</strong> {{ $estimation->service_advisor }}</p>
+                        <p class="mb-1"><strong>User:</strong> {{ $estimation->workOrder->service_user ?? 'N/A' }}</p>
                     </div>
                     <div class="col-md-6">
                         <p class="mb-1"><strong>Customer:</strong> {{ $estimation->workOrder->customer_name ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Tanggal:</strong> {{ $estimation->created_at->format('d/m/Y') }}</p>
                         <p class="mb-1"><strong>Created By:</strong> {{ $estimation->creator->name ?? 'N/A' }}</p>
-                        <p class="mb-1"><strong>Processed By:</strong> {{ $estimation->approver->name ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>Processed By:</strong> {{ $estimation->service_advisor }}</p>
+                        <p class="mb-1"><strong>Service Advisor:</strong> {{ $estimation->workOrder->service_advisor ?? 'N/A' }}</p>
                     </div>
                 </div>
                 
@@ -177,7 +178,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <a href="{{ route('estimations.pdf', ['id' => $estimation->id]) }}" class="btn btn-primary">
+                <a href="{{ route('admin.estimations.pdf', ['id' => $estimation->id]) }}" class="btn btn-primary">
                     <i class="fas fa-file-pdf"></i> Download PDF
                 </a>
             </div>

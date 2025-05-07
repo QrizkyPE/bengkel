@@ -159,6 +159,20 @@ Route::group(['middleware' => 'auth'], function() {
             }
             return app()->make('App\Http\Controllers\AdminController')->deleteUser($id);
         })->name('admin.users.delete');
+
+        Route::post('/admin/invoices/{invoice}/pdf', function($invoice) {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->generateInvoicePDF($invoice);
+        })->name('admin.invoices.pdf');
+
+        Route::get('/admin/estimations/{id}/pdf', function($id) {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\AdminController')->generateEstimationPDF($id);
+        })->name('admin.estimations.pdf');
     });
     
     // Service routes

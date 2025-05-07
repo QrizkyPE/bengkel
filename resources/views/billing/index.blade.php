@@ -92,12 +92,12 @@
                         <p class="mb-1"><strong>No. Polisi:</strong> {{ $estimation->workOrder->no_polisi }}</p>
                         <p class="mb-1"><strong>Kilometer:</strong> {{ $estimation->workOrder->kilometer }}</p>
                         <p class="mb-1"><strong>Type Kendaraan:</strong> {{ $estimation->workOrder->type_kendaraan }}</p>
-                        <p><strong>User:</strong> {{ $estimation->estimationItems->first()->serviceRequest->user->name ?? 'N/A' }}</p>
+                        <p><strong>User:</strong> {{ $estimation->workOrder->service_user }}</p>
                     </div>
                     <div class="col-md-6">
                         <p class="mb-1"><strong>Customer:</strong> {{ $estimation->workOrder->customer_name }}</p>
                         <p class="mb-1"><strong>Tanggal:</strong> {{ $estimation->created_at->format('d/m/Y') }}</p>
-                        <p class="mb-1"><strong>Service Advisor:</strong> {{ $estimation->service_advisor }}</p>
+                        <p class="mb-1"><strong>Service Advisor:</strong> {{ $estimation->workOrder->service_advisor }}</p>
                         <p class="mb-1"><strong>Status:</strong> 
                             <span class="badge bg-success">Disetujui pada {{ $estimation->approved_at->format('d/m/Y H:i') }}</span>
                         </p>

@@ -124,6 +124,8 @@ class ServiceRequestController extends Controller
                 'no_spk' => $workOrder->no_spk,
                 'type_kendaraan' => $workOrder->type_kendaraan,
                 'keluhan' => $workOrder->keluhan,
+                'service_advisor' => $workOrder->service_advisor,
+                'service_user' => $workOrder->service_user,
             ];
             
             $pdf = PDF::loadView('requests.pdf', $data);
@@ -158,7 +160,7 @@ class ServiceRequestController extends Controller
         
         if ($workOrder->serviceRequests->isEmpty()) {
             return redirect()->route('requests.index')
-                ->with('error', 'Work Order does not have any service requests');
+                ->with('error', 'Work Order belum ada permintaan sparepart');
         }
         
         return view('service.estimations.create', compact('workOrder'));
@@ -213,7 +215,7 @@ class ServiceRequestController extends Controller
             
             // Check if there are any service requests
             if ($workOrder->serviceRequests->isEmpty()) {
-                return back()->with('error', 'Work Order does not have any service requests');
+                return back()->with('error', 'Work Order belum ada permintaan sparepart');
             }
             
             // Check if an estimation already exists for this work order

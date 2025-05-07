@@ -66,7 +66,7 @@
                                     <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#detailModal-{{ $invoice->id }}">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <form action="{{ route('billing.generate.pdf', ['invoice' => $invoice->id]) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.invoices.pdf', ['invoice' => $invoice->id]) }}" method="POST" class="d-inline">
                                         @csrf
                                         <button type="submit" class="btn btn-secondary">
                                             <i class="fas fa-file-pdf"></i>
@@ -111,12 +111,14 @@
                         <p class="mb-1"><strong>No. Polisi:</strong> {{ $invoice->estimation->workOrder->no_polisi ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Kilometer:</strong> {{ $invoice->estimation->workOrder->kilometer ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Type Kendaraan:</strong> {{ $invoice->estimation->workOrder->type_kendaraan ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>User:</strong> {{ $invoice->estimation->workOrder->service_user ?? 'N/A' }}</p>
                     </div>
                     <div class="col-md-6">
                         <p class="mb-1"><strong>Customer:</strong> {{ $invoice->estimation->workOrder->customer_name ?? 'N/A' }}</p>
                         <p class="mb-1"><strong>Tanggal Invoice:</strong> {{ $invoice->created_at->format('d/m/Y') }}</p>
                         <p class="mb-1"><strong>Tanggal Bayar:</strong> {{ $invoice->paid_at ? date('d/m/Y', strtotime($invoice->paid_at)) : 'Belum dibayar' }}</p>
                         <p class="mb-1"><strong>Created By:</strong> {{ $invoice->creator->name ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>Service Advisor:</strong> {{ $invoice->estimation->workOrder->service_advisor ?? 'N/A' }}</p>
                     </div>
                 </div>
                 
@@ -188,7 +190,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <form action="{{ route('billing.generate.pdf', ['invoice' => $invoice->id]) }}" method="POST" class="d-inline">
+                <form action="{{ route('admin.invoices.pdf', ['invoice' => $invoice->id]) }}" method="POST" class="d-inline">
                     @csrf
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-file-pdf"></i> Download PDF

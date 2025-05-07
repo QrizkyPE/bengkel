@@ -111,16 +111,17 @@ class BillingController extends Controller
     public function generatePDF(Request $request, $invoiceId)
     {
         $invoice = Invoice::with([
-            'estimation.estimationItems.serviceRequest.user',
+            'estimation.estimationItems.serviceRequest',
             'estimation.workOrder',
             'creator'
         ])->findOrFail($invoiceId);
         
         $pdf = PDF::loadView('billing.invoice-pdf', [
-            'invoice' => $invoice
+            'invoice' => $invoice,
+            'estimation' => $invoice->estimation
         ]);
         
-        // Sanitize the invoice number to remove slashes and other problematic characters
+        // Sanitize the invoice number
         $safeInvoiceNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number);
         
         // Generate a filename based on the sanitized invoice number

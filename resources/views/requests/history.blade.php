@@ -107,10 +107,12 @@
                         <p class="mb-1"><strong>No. Polisi:</strong> {{ $workOrder->no_polisi }}</p>
                         <p class="mb-1"><strong>Kilometer:</strong> {{ $workOrder->kilometer }}</p>
                         <p class="mb-1"><strong>Type Kendaraan:</strong> {{ $workOrder->type_kendaraan }}</p>
+                        <p><strong>User:</strong> {{ $workOrder->service_user }}</p>
                     </div>
                     <div class="col-md-6">
                         <p class="mb-1"><strong>Customer:</strong> {{ $workOrder->customer_name }}</p>
                         <p class="mb-1"><strong>Tanggal:</strong> {{ $workOrder->created_at->format('d/m/Y') }}</p>
+                        <p class="mb-1"><strong>Service Advisor:</strong> {{ $workOrder->service_advisor }}</p>
                         <p class="mb-1"><strong>Keluhan:</strong> {{ $workOrder->keluhan ?? '-' }}</p>
                         <p class="mb-1"><strong>Diproses pada:</strong> {{ $estimation && $estimation->approved_at ? $estimation->approved_at->format('d/m/Y H:i') : '-' }}</p>
                     </div>

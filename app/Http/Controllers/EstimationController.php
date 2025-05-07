@@ -47,7 +47,7 @@ class EstimationController extends Controller
         
         if ($workOrder->serviceRequests->isEmpty()) {
             return redirect()->route('requests.index')
-                ->with('error', 'Work Order does not have any service requests');
+                ->with('error', 'Work Order belum ada permintaan sparepart');
         }
         
         return view('estimator.estimations.create', compact('workOrder'));
@@ -263,7 +263,9 @@ class EstimationController extends Controller
         // Generate PDF
         $pdf = PDF::loadView('estimations.pdf', [
             'estimation' => $estimation,
-            'serviceRequest' => $serviceRequest
+            'serviceRequest' => $serviceRequest,
+            'service_advisor' => $serviceRequest->workOrder->service_advisor,
+            'service_user' => $serviceRequest->workOrder->service_user
         ]);
 
         return $pdf->download('estimation-'.$serviceRequest->id.'.pdf');
@@ -292,10 +294,10 @@ class EstimationController extends Controller
         return $this->approve($request, $id);
     }
 
-    public function generatePDF(Request $request, $id)
+    public function generatePDF($id)
     {
         $estimation = Estimation::with([
-            'estimationItems.serviceRequest.user',
+            'estimationItems.serviceRequest',
             'workOrder',
             'creator'
         ])->findOrFail($id);
@@ -304,10 +306,7 @@ class EstimationController extends Controller
             'estimation' => $estimation
         ]);
         
-        // Sanitize the work order number to remove slashes and other problematic characters
         $safeWorkOrderNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $estimation->workOrder->no_spk);
-        
-        // Generate a filename based on the sanitized work order number
         $filename = 'estimasi-' . $safeWorkOrderNumber . '.pdf';
         
         return $pdf->download($filename);

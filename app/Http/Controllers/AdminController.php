@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use PDF;
 
 class AdminController extends Controller
 {
@@ -185,5 +186,38 @@ class AdminController extends Controller
             Log::error('Delete User Error: ' . $e->getMessage());
             return back()->with('error', 'An error occurred while deleting the user: ' . $e->getMessage());
         }
+    }
+
+    public function generateInvoicePDF($invoice)
+    {
+        $invoice = Invoice::with([
+            'estimation.estimationItems.serviceRequest',
+            'estimation.workOrder',
+            'creator'
+        ])->findOrFail($invoice);
+        
+        $pdf = PDF::loadView('billing.invoice-pdf', [
+            'invoice' => $invoice,
+            'estimation' => $invoice->estimation
+        ]);
+        
+        $safeInvoiceNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number);
+        return $pdf->download('invoice-' . $safeInvoiceNumber . '.pdf');
+    }
+
+    public function generateEstimationPDF($id)
+    {
+        $estimation = Estimation::with([
+            'estimationItems.serviceRequest',
+            'workOrder',
+            'creator'
+        ])->findOrFail($id);
+        
+        $pdf = PDF::loadView('estimator.estimations.estimation-pdf', [
+            'estimation' => $estimation
+        ]);
+        
+        $safeWorkOrderNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $estimation->workOrder->no_spk);
+        return $pdf->download('estimasi-' . $safeWorkOrderNumber . '.pdf');
     }
 } 

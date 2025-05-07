@@ -55,9 +55,23 @@ class InvoiceController extends Controller
         $pdf = PDF::loadView('invoices.pdf', [
             'invoice' => $invoice,
             'estimation' => $estimation,
-            'serviceRequest' => $estimation->serviceRequest
+            'serviceRequest' => $estimation->serviceRequest,
+            
         ]);
 
         return $pdf->download('invoice-'.$invoice->id.'.pdf');
+    }
+
+    public function generatePDF(Invoice $invoice)
+    {
+        $pdf = PDF::loadView('billing.invoice-pdf', [
+            'invoice' => $invoice,
+            'estimation' => $invoice->estimation
+        ]);
+        
+        $safeInvoiceNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number);
+        $filename = 'invoice-' . $safeInvoiceNumber . '.pdf';
+        
+        return $pdf->download($filename);
     }
 } 

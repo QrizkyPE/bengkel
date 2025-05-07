@@ -151,9 +151,9 @@
                 <div class="info-right" style="font-weight: bold">
                     <p style="font-size: 15px; margin: 5px 0;">INVOICE: {{ $invoice->invoice_number ?? '-' }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">Type Kend.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : {{ $invoice->estimation->workOrder->type_kendaraan ?? '-' }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">Serv.Advisor&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->service_advisor }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">Serv.Advisor&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->workOrder->service_advisor }}</p>
                     <p style="font-size: 15px; margin: 5px 0;">Cust name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->workOrder->customer_name ?? '-' }}</p>
-                    <p style="font-size: 15px; margin: 5px 0;">User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->estimationItems->first()->serviceRequest->user->name ?? '-' }}</p>
+                    <p style="font-size: 15px; margin: 5px 0;">User&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {{ $invoice->estimation->workOrder->service_user }}</p>
                 </div>
             </div>
         </div>

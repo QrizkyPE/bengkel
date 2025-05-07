@@ -16,6 +16,8 @@ class WorkOrder extends Model
         'type_kendaraan',
         'customer_name',
         'keluhan',
+        'service_advisor',
+        'service_user',
         'user_id'
     ];
 

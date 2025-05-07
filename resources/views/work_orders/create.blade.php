@@ -82,6 +82,30 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="mb-3">
+                            <label for="service_advisor" class="form-label">Service Advisor</label>
+                            <input type="text" 
+                                class="form-control @error('service_advisor') is-invalid @enderror" 
+                                id="service_advisor" 
+                                name="service_advisor" 
+                                value="{{ old('service_advisor') }}" 
+                                required>
+                            @error('service_advisor')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="service_user" class="form-label">User</label>
+                            <input type="text" 
+                                class="form-control @error('service_user') is-invalid @enderror" 
+                                id="service_user" 
+                                name="service_user" 
+                                value="{{ old('service_user') }}" 
+                                required>
+                            @error('service_user')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('requests.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Kembali
