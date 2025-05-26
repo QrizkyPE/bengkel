@@ -32,8 +32,15 @@
 
         <div class="mb-3">
             <label for="satuan" class="form-label">Satuan</label>
-            <input type="text" class="form-control @error('satuan') is-invalid @enderror" 
-                id="satuan" name="satuan" value="{{ old('satuan', $request->satuan) }}" required>
+            <select class="form-select @error('satuan') is-invalid @enderror" id="satuan" name="satuan" required>
+                <option value="" disabled {{ old('satuan', $request->satuan) ? '' : 'selected' }}>Pilih Satuan</option>
+                <option value="PCS" {{ old('satuan', $request->satuan) == 'PCS' ? 'selected' : '' }}>PCS</option>
+                <option value="BH" {{ old('satuan', $request->satuan) == 'BH' ? 'selected' : '' }}>BH</option>
+                <option value="LT" {{ old('satuan', $request->satuan) == 'LT' ? 'selected' : '' }}>LT</option>
+                <option value="SET" {{ old('satuan', $request->satuan) == 'SET' ? 'selected' : '' }}>SET</option>
+                <option value="UN" {{ old('satuan', $request->satuan) == 'UN' ? 'selected' : '' }}>UN</option>
+                <option value="BTL" {{ old('satuan', $request->satuan) == 'BTL' ? 'selected' : '' }}>BTL</option>
+            </select>
             @error('satuan')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror

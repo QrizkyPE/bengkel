@@ -25,7 +25,7 @@ return new class extends Migration
         $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
     });
 
-    // Add work_order_id to service_requests table
+   
     Schema::table('service_requests', function (Blueprint $table) {
         $table->unsignedBigInteger('work_order_id')->after('user_id')->nullable();
         $table->foreign('work_order_id')->references('id')->on('work_orders')->onDelete('cascade');
