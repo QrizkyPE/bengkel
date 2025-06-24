@@ -141,7 +141,7 @@
                             <div class="timeline-content">
                                 <h6 class="mb-0">Estimation {{ ucfirst($estimation->status) }}</h6>
                                 <small class="text-muted">{{ $estimation->approved_at ? $estimation->approved_at->format('d/m/Y H:i') : 'N/A' }}</small>
-                                <p>By {{ $estimation->approver->name ?? 'N/A' }}</p>
+                                <p>By {{ $estimation->service_advisor ?? 'N/A' }}</p>
                                 @if($estimation->notes)
                                 <div class="mt-2 p-2 border rounded bg-light">
                                     <small>{{ $estimation->notes }}</small>
