@@ -294,7 +294,7 @@ class EstimationController extends Controller
         return $this->approve($request, $id);
     }
 
-    public function generatePDF($id)
+    public function generatePDF(Request $request, $id)
     {
         $estimation = Estimation::with([
             'estimationItems.serviceRequest',

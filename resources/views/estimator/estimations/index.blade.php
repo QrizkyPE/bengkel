@@ -34,8 +34,8 @@
                             <a href="{{ route('estimations.edit', $estimation->id) }}" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Edit Harga
                             </a>
-                            <form action="{{ url('/estimator/estimations/'.$estimation->id.'/pdf') }}" method="POST" class="d-inline">
-                                @csrf
+                            <form action="{{ route('estimations.pdf', ['id' => $estimation->id]) }}" method="GET" class="d-inline">
+                                
                                 <button type="submit" class="btn btn-secondary">
                                     <i class="fas fa-file-pdf"></i> PDF
                                 </button>
