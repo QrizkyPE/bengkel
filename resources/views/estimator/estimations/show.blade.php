@@ -19,7 +19,7 @@
                         <div class="col-md-6">
                             <p><strong>Kilometer:</strong> {{ $estimation->workOrder->kilometer }}</p>
                             <p><strong>Tanggal:</strong> {{ $estimation->created_at->format('d/m/Y') }}</p>
-                            <p><strong>Service Advisor:</strong> {{ $estimation->service_advisor }}</p>
+                            <p><strong>Service Advisor:</strong> {{ $estimation->workOrder->service_advisor }}</p>
                             <p><strong>Keluhan:</strong> {{ $estimation->workOrder->keluhan ?? '-' }}</p>
                         </div>
                     </div>
