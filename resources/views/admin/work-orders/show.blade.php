@@ -227,7 +227,7 @@
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <p><strong>Service Advisor:</strong> {{ $estimation->service_advisor }}</p>
+                    <p><strong>Estimator:</strong> {{ $estimation->service_advisor }}</p>
                 </div>
                 <div class="col-md-4">
                     <p><strong>Created By:</strong> {{ $estimation->creator->name ?? 'N/A' }}</p>
