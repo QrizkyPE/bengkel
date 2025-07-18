@@ -83,6 +83,23 @@
                             @enderror
                         </div>
                         <div class="mb-3">
+                                <label for="service_advisor" class="form-label">Service Advisor</label>
+                                <select class="form-select @error('service_advisor') is-invalid @enderror" id="service_advisor" name="service_advisor"
+                                    required>
+                                    <option value="" disabled {{ old('service_advisor') ? '' : 'selected' }}>Pilih Service Advisor</option>
+                                    <option value="Proma Asandi" {{ old('service_advisor') == 'Proma Asandi' ? 'selected' : '' }}>Proma Asandi</option>
+                                    <option value="Anjas M." {{ old('service_advisor') == 'Anjas M.' ? 'selected' : '' }}>Anjas M.</option>
+                                    <option value="Tongky Ari W." {{ old('service_advisor') == 'Tongky Ari W.' ? 'selected' : '' }}>Tongky Ari W.</option>
+                                    <option value="Anggara" {{ old('service_advisor') == 'Anggara' ? 'selected' : '' }}>Anggara</option>
+                                    <option value="Irwansyah" {{ old('service_advisor') == 'Irwansyah' ? 'selected' : '' }}>Irwansyah</option>
+                                    <option value="Heru" {{ old('service_advisor') == 'Heru' ? 'selected' : '' }}>Heru</option>
+                                    <option value="Erik Purnomo" {{ old('service_advisor') == 'Erik Purnomo' ? 'selected' : '' }}>Erik Purnomo</option>
+                                </select>
+                                @error('satuan')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        <!-- <div class="mb-3">
                             <label for="service_advisor" class="form-label">Service Advisor</label>
                             <input type="text" 
                                 class="form-control @error('service_advisor') is-invalid @enderror" 
@@ -93,7 +110,7 @@
                             @error('service_advisor')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                        </div>
+                        </div> -->
                         <div class="mb-3">
                             <label for="service_user" class="form-label">User</label>
                             <input type="text" 
