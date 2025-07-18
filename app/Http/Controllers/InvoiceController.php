@@ -59,7 +59,7 @@ class InvoiceController extends Controller
             
         ]);
 
-        return $pdf->download('invoice-'.$invoice->id.'.pdf');
+        return $pdf->download('Invoice '.$invoice->id.'.pdf');
     }
 
     public function generatePDF(Invoice $invoice)
@@ -70,7 +70,7 @@ class InvoiceController extends Controller
         ]);
         
         $safeInvoiceNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $invoice->invoice_number);
-        $filename = 'invoice-' . $safeInvoiceNumber . '.pdf';
+        $filename = 'Invoice ' . $safeInvoiceNumber . '.pdf';
         
         return $pdf->download($filename);
     }

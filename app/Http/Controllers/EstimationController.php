@@ -307,7 +307,7 @@ class EstimationController extends Controller
         ]);
         
         $safeWorkOrderNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $estimation->workOrder->no_spk);
-        $filename = 'estimasi-' . $safeWorkOrderNumber . '.pdf';
+        $filename = 'Estimasi ' . $safeWorkOrderNumber . '.pdf';
         
         return $pdf->download($filename);
     }

@@ -129,8 +129,8 @@ class ServiceRequestController extends Controller
             ];
             
             $pdf = PDF::loadView('requests.pdf', $data);
-            
-            return $pdf->download('work-order.pdf');
+            $safeWorkOrderNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $workOrder->no_spk);
+            return $pdf->download('WorkOrder '.$safeWorkOrderNumber.'.pdf');
             
         } catch (\Exception $e) {
             \Log::error('PDF Generation failed:', [
