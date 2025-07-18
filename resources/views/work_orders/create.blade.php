@@ -72,16 +72,39 @@
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="keluhan" class="form-label">Keluhan</label>
+                            <label for="keluhan_option" class="form-label">Keluhan</label>
+                            <select class="form-select" id="keluhan_option" name="keluhan_option" required onchange="toggleKeluhanInput()">
+                                <option value="default" {{ old('keluhan_option', old('keluhan') === 'SB. 10.000 KM' ? 'default' : '') == 'default' ? 'selected' : '' }}>SB. 10.000 KM</option>
+                                <option value="lainnya" {{ old('keluhan_option', old('keluhan') !== 'SB. 10.000 KM' && old('keluhan') ? 'lainnya' : '') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                            </select>
                             <textarea 
-                                class="form-control @error('keluhan') is-invalid @enderror" 
+                                class="form-control @error('keluhan') is-invalid @enderror mt-2" 
                                 id="keluhan" 
                                 name="keluhan" 
-                                rows="3">{{ old('keluhan') }}</textarea>
+                                rows="3"
+                                {{ old('keluhan_option', old('keluhan') === 'SB. 10.000 KM' ? 'default' : '') == 'default' ? 'readonly' : '' }}>{{ old('keluhan_option', old('keluhan') === 'SB. 10.000 KM' ? 'default' : '') == 'default' ? 'SB. 10.000 KM' : old('keluhan') }}</textarea>
                             @error('keluhan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        @push('scripts')
+                        <script>
+                        function toggleKeluhanInput() {
+                            var select = document.getElementById('keluhan_option');
+                            var textarea = document.getElementById('keluhan');
+                            if (select.value === 'default') {
+                                textarea.value = 'SB. 10.000 KM';
+                                textarea.setAttribute('readonly', true);
+                            } else {
+                                textarea.value = '';
+                                textarea.removeAttribute('readonly');
+                            }
+                        }
+                        document.addEventListener('DOMContentLoaded', function() {
+                            toggleKeluhanInput();
+                        });
+                        </script>
+                        @endpush
                         <div class="mb-3">
                                 <label for="service_advisor" class="form-label">Service Advisor</label>
                                 <select class="form-select @error('service_advisor') is-invalid @enderror" id="service_advisor" name="service_advisor"
