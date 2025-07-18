@@ -16,10 +16,11 @@
                                 <input type="hidden" name="work_order_id" value="{{ request('work_order') }}">
                             @endif
 
-                            <div class="mb-3">
+                            <div class="mb-3 position-relative">
                                 <label for="sparepart_name" class="form-label">Nama Sparepart</label>
                                 <input type="text" class="form-control @error('sparepart_name') is-invalid @enderror"
-                                    id="sparepart_name" name="sparepart_name" value="{{ old('sparepart_name') }}" required>
+                                    id="sparepart_name" name="sparepart_name" value="{{ old('sparepart_name') }}" autocomplete="off" required>
+                                <div id="sparepart-suggestions" class="list-group position-absolute w-100" style="z-index: 1000;"></div>
                                 @error('sparepart_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -134,6 +135,49 @@
                     // Submit the form
                     console.log('Submitting form...');
                     this.submit();
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const input = document.getElementById('sparepart_name');
+                const suggestions = document.getElementById('sparepart-suggestions');
+
+                input.addEventListener('input', function () {
+                    const query = this.value;
+                    if (query.length < 2) {
+                        suggestions.innerHTML = '';
+                        return;
+                    }
+                    fetch(`/api/spareparts/search?q=${encodeURIComponent(query)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            suggestions.innerHTML = '';
+                            if (data.length === 0) {
+                                suggestions.style.display = 'none';
+                                return;
+                            }
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'list-group-item list-group-item-action';
+                                div.textContent = item;
+                                div.onclick = () => {
+                                    input.value = item;
+                                    suggestions.innerHTML = '';
+                                    suggestions.style.display = 'none';
+                                };
+                                suggestions.appendChild(div);
+                            });
+                            suggestions.style.display = 'block';
+                        });
+                });
+
+                // Hide suggestions when clicking outside
+                document.addEventListener('click', function (e) {
+                    if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                        suggestions.innerHTML = '';
+                        suggestions.style.display = 'none';
+                    }
                 });
             });
         </script>

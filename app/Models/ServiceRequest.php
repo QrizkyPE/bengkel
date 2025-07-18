@@ -49,5 +49,10 @@ class ServiceRequest extends Model
         return $this->hasMany(EstimationItem::class);
     }
 
+    public function sparepart()
+    {
+        return $this->belongsTo(\App\Models\spareparts::class, 'sparepart_id');
+    }
+
     // public $timestamps = true;
 }

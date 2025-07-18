@@ -14,6 +14,7 @@ use App\Http\Controllers\WorkOrderController;
 use App\Http\Middleware\CheckRole;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\SparepartController;
 
 // Add this at the top of your routes file, after the <?php line
 error_reporting(E_ALL);
@@ -439,4 +440,6 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/reset-password', [App\Http\Controllers\AuthController::class, 'resetPassword'])
     ->name('reset.password')
     ->middleware('auth');
+
+Route::get('/api/spareparts/search', [SparepartController::class, 'search']);
 
