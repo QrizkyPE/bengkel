@@ -198,7 +198,7 @@ class ServiceRequestController extends Controller
         }
         
         return redirect()->route('requests.index')
-            ->with('success', 'Estimasi berhasil diajukan dan menunggu persetujuan dari estimator.');
+            ->with('success', 'Estimasi berhasil pindahkan ke halaman Estimasi');
     }
 
     public function submitToEstimator(Request $request)
@@ -244,7 +244,7 @@ class ServiceRequestController extends Controller
                 ]);
             }
             
-            return back()->with('success', 'Work Order berhasil diajukan ke Estimator');
+            return back()->with('success', 'Work Order berhasil dipindahkan ke halaman Estimasi');
             
         } catch (\Exception $e) {
             \Log::error('Submit to Estimator failed:', [

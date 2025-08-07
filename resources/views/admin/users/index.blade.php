@@ -51,8 +51,6 @@
                                     
                                     if ($user->role == 'admin') {
                                         $roleClass = 'bg-danger';
-                                    } elseif ($user->role == 'service') {
-                                        $roleClass = 'bg-primary';
                                     } elseif ($user->role == 'estimator') {
                                         $roleClass = 'bg-success';
                                     } elseif ($user->role == 'billing') {
@@ -117,7 +115,6 @@
                         <select class="form-select" id="role" name="role" required>
                             <option value="">Select Role</option>
                             <option value="admin">Admin</option>
-                            <option value="service">Service</option>
                             <option value="estimator">Estimator</option>
                             <option value="billing">Billing</option>
                         </select>
@@ -168,7 +165,6 @@
                         <label for="edit_role_{{ $user->id }}" class="form-label">Role</label>
                         <select class="form-select" id="edit_role_{{ $user->id }}" name="role" required>
                             <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="service" {{ $user->role == 'service' ? 'selected' : '' }}>Service</option>
                             <option value="estimator" {{ $user->role == 'estimator' ? 'selected' : '' }}>Estimator</option>
                             <option value="billing" {{ $user->role == 'billing' ? 'selected' : '' }}>Billing</option>
                         </select>

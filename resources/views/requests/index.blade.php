@@ -265,7 +265,7 @@
                             @csrf
                             <input type="hidden" name="work_order_id" value="{{ $workOrder->id }}">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-file-invoice-dollar"></i> Ajukan Estimasi
+                                <i class="fas fa-file-invoice-dollar"></i> Pindahkan ke Estimasi
                             </button>
                         </form>
                     @endif

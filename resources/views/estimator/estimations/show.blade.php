@@ -81,24 +81,7 @@
                                     </form>
                                 </div>
                                 <div class="col-md-6">
-                                    <form action="{{ route('estimations.reject', $estimation->id) }}" method="POST" id="rejectForm">
-                                        @csrf
-                                        <div class="form-group mb-3">
-                                            <label for="reject_notes">Catatan <span class="text-danger">*</span></label>
-                                            <textarea name="notes" id="reject_notes" class="form-control @error('notes') is-invalid @enderror" rows="3" required></textarea>
-                                            <div class="invalid-feedback" id="notesError">
-                                                Catatan wajib diisi saat menolak estimasi. Berikan alasan penolakan.
-                                            </div>
-                                            @error('notes')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <button type="button" id="rejectButton" class="btn btn-danger">
-                                            <i class="fas fa-times"></i> Tolak Estimasi
-                                        </button>
-                                    </form>
+                                    <!-- The reject form and button are removed -->
                                 </div>
                             </div>
                         </div>
@@ -146,27 +129,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Client-side validation for reject form
-        const rejectButton = document.getElementById('rejectButton');
-        if (rejectButton) {
-            rejectButton.addEventListener('click', function() {
-                const rejectNotes = document.getElementById('reject_notes');
-                const notesError = document.getElementById('notesError');
-                
-                if (!rejectNotes.value.trim()) {
-                    rejectNotes.classList.add('is-invalid');
-                    notesError.style.display = 'block';
-                } else {
-                    document.getElementById('rejectForm').submit();
-                }
-            });
-            
-            // Remove error when user starts typing
-            document.getElementById('reject_notes').addEventListener('input', function() {
-                if (this.value.trim()) {
-                    this.classList.remove('is-invalid');
-                }
-            });
-        }
+        // The rejectButton listener is removed as the form is removed.
+        // The notesError display logic is also removed as the form is removed.
     });
 </script>
 @endpush
