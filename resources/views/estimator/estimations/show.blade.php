@@ -81,7 +81,31 @@
                                     </form>
                                 </div>
                                 <div class="col-md-6">
-                                    <!-- The reject form and button are removed -->
+                                    <form action="{{ route('work.orders.resubmit') }}" method="POST" id="rejectForm">
+                                        @csrf
+                                        <input type="hidden" name="work_order_id" value="{{ $estimation->workOrder->id }}">
+                                        <button type="button" id="rejectButton" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectConfirmModal">
+                                            <i class="fas fa-times"></i> Edit Work Order
+                                        </button>
+                                        <!-- Confirmation Modal -->
+                                        <div class="modal fade" id="rejectConfirmModal" tabindex="-1" aria-labelledby="rejectConfirmModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-danger text-white">
+                                                        <h5 class="modal-title" id="rejectConfirmModalLabel">Konfirmasi Pengeditan</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Apakah anda yakin ingin mengedit work order?</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
+                                                        <button type="submit" class="btn btn-danger">Ya</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -129,8 +153,29 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Client-side validation for reject form
-        // The rejectButton listener is removed as the form is removed.
-        // The notesError display logic is also removed as the form is removed.
+        const rejectButton = document.getElementById('rejectButton');
+        const rejectForm = document.getElementById('rejectForm');
+        const notes = document.getElementById('reject_notes');
+        const notesError = document.getElementById('notesError');
+        if (rejectButton && rejectForm && notes) {
+            rejectButton.addEventListener('click', function(e) {
+                if (!notes.value.trim()) {
+                    e.preventDefault();
+                    notes.classList.add('is-invalid');
+                    notesError.style.display = 'block';
+                } else {
+                    notes.classList.remove('is-invalid');
+                    notesError.style.display = 'none';
+                    rejectForm.submit();
+                }
+            });
+            notes.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('is-invalid');
+                    notesError.style.display = 'none';
+                }
+            });
+        }
     });
 </script>
 @endpush

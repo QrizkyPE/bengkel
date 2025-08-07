@@ -47,6 +47,9 @@
                                         <i class="fas fa-check"></i> Setujui
                                     </button>
                                 </form>
+                                <button type="button" class="btn btn-danger reject-btn" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $estimation->id }}">
+                                    <i class="fas fa-edit"></i> Edit Work Order
+                                </button>
                             @endif
                         </div>
                     </div>
@@ -112,6 +115,28 @@
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+            </div>
+        </div>
+        <!-- Edit Work Order Modal for each estimation -->
+        <div class="modal fade" id="rejectModal{{ $estimation->id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ $estimation->id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('work.orders.resubmit') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="work_order_id" value="{{ $estimation->workOrder->id }}">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="rejectModalLabel{{ $estimation->id }}">Edit Work Order #{{ $estimation->workOrder->no_spk }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Apakah anda yakin ingin mengedit Work Order?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
+                            <button type="submit" class="btn btn-danger">Ya</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
