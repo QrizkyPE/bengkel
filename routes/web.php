@@ -176,100 +176,6 @@ Route::group(['middleware' => 'auth'], function() {
         })->name('admin.estimations.pdf');
     });
     
-    // Service routes
-    Route::group(['prefix' => 'service'], function() {
-        Route::get('/requests', function() {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->index();
-        })->name('requests.index');
-        
-        // Add the create route
-        Route::get('/requests/create', function() {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->create();
-        })->name('requests.create');
-        
-        // Add the store route
-        Route::post('/requests', function() {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->store(request());
-        })->name('requests.store');
-        
-        // Add edit route
-        Route::get('/requests/{request}/edit', function($request) {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->edit($request);
-        })->name('requests.edit');
-        
-        // Add update route
-        Route::put('/requests/{request}', function($request) {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->update(request(), $request);
-        })->name('requests.update');
-        
-        // Add show route
-        Route::get('/requests/{request}', function($request) {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->show(
-                \App\Models\ServiceRequest::findOrFail($request)
-            );
-        })->name('requests.show');
-        
-        // Add delete route
-        Route::delete('/requests/{request}', function($request) {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->destroy(
-                \App\Models\ServiceRequest::findOrFail($request)
-            );
-        })->name('requests.destroy');
-        
-        // Add Route for submitting to estimator
-        Route::post('/service/requests/submit-to-estimator', function() {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->submitToEstimator(request());
-        })->name('submit.to.estimator')->middleware('auth');
-
-        // Add Route for unfilled work orders
-        Route::get('/unfilled-work-orders', function() {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->unfilledWorkOrders();
-        })->name('unfilled.work.orders')->middleware('auth');
-
-        // Add Route for work order history
-        Route::get('/service/work-orders/history', function() {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->workOrderHistory();
-        })->name('work.orders.history')->middleware('auth');
-
-        // Add this route for resubmitting a rejected work order
-        Route::post('/service/work-orders/resubmit', function() {
-            if (auth()->user()->role !== 'service') {
-                abort(403, 'Unauthorized action.');
-            }
-            return app()->make('App\Http\Controllers\ServiceRequestController')->resubmitWorkOrder(request());
-        })->name('work.orders.resubmit')->middleware('auth');
-    });
-    
     // Estimator routes
     Route::group(['middleware' => 'auth', 'prefix' => 'estimator'], function() {
         Route::get('/estimations', function() {
@@ -333,6 +239,78 @@ Route::group(['middleware' => 'auth'], function() {
                 $estimation
             );
         })->name('estimations.reject');
+
+        // ServiceRequestController routes moved from service group
+        Route::get('/requests', function() {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->index();
+        })->name('requests.index');
+        Route::get('/requests/create', function() {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->create();
+        })->name('requests.create');
+        Route::post('/requests', function() {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->store(request());
+        })->name('requests.store');
+        Route::get('/requests/{request}/edit', function($request) {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->edit($request);
+        })->name('requests.edit');
+        Route::put('/requests/{request}', function($request) {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->update(request(), $request);
+        })->name('requests.update');
+        Route::get('/requests/{request}', function($request) {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->show(
+                \App\Models\ServiceRequest::findOrFail($request)
+            );
+        })->name('requests.show');
+        Route::delete('/requests/{request}', function($request) {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->destroy(
+                \App\Models\ServiceRequest::findOrFail($request)
+            );
+        })->name('requests.destroy');
+        Route::post('/requests/submit-to-estimator', function() {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->submitToEstimator(request());
+        })->name('submit.to.estimator')->middleware('auth');
+        Route::get('/unfilled-work-orders', function() {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->unfilledWorkOrders();
+        })->name('unfilled.work.orders')->middleware('auth');
+        Route::get('/work-orders/history', function() {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->workOrderHistory();
+        })->name('work.orders.history')->middleware('auth');
+        Route::post('/work-orders/resubmit', function() {
+            if (auth()->user()->role !== 'estimator') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\ServiceRequestController')->resubmitWorkOrder(request());
+        })->name('work.orders.resubmit')->middleware('auth');
     });
 });
 
@@ -368,7 +346,7 @@ Route::post('/estimator/estimations/{id}/pdf', function($id) {
 
 // Add a GET route for direct PDF access
 Route::get('/estimator/estimations/{id}/pdf', function($id) {
-    if (auth()->user()->role !== 'estimator' && auth()->user()->role !== 'service') {
+    if (auth()->user()->role !== 'estimator') {
         abort(403, 'Unauthorized action.');
     }
     return app()->make('App\Http\Controllers\EstimationController')->generatePDF(request(), $id);

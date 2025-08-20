@@ -428,7 +428,7 @@
                                     </li>
                                 @endif
 
-                                @if(auth()->user()->role === 'service')
+                                @if(auth()->user()->role === 'estimator')
                                     <li class="nav-item">
                                         <a class="nav-link {{ request()->routeIs('requests.index') ? 'active' : '' }}" href="{{ route('requests.index') }}">
                                             <i class="fas fa-home"></i> Home
@@ -439,11 +439,11 @@
                                             <i class="fas fa-file-alt"></i> <span>Unfilled WO</span>
                                         </a>
                                     </li>
-                                    <li class="nav-item">
+                                    {{-- <li class="nav-item">
                                         <a class="nav-link {{ request()->routeIs('work.orders.history') ? 'active' : '' }}" href="{{ route('work.orders.history') }}">
                                             <i class="fas fa-history"></i> <span>History</span>
                                         </a>
-                                    </li>
+                                    </li> --}}
                                 @endif
 
                                 @if(auth()->user()->role === 'estimator')

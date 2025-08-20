@@ -14,12 +14,12 @@ class UserSeeder extends Seeder
     public function run()
     {
         // Admin user
-        // User::create([
-        //     'name' => 'Admin',
-        //     'email' => 'admin@bengkel.com',
-        //     'password' => bcrypt('password'),
-        //     'role' => 'admin',
-        // ]);
+        User::create([
+            'name' => 'Admin',
+            'email' => 'admin@bengkel.com',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
+        ]);
 
         // // Service User
         // User::create([
@@ -30,19 +30,19 @@ class UserSeeder extends Seeder
         // ]);
 
         // Estimator user
-        // User::create([
-        //     'name' => 'Estimator',
-        //     'email' => 'estimator@bengkel.com',
-        //     'password' => bcrypt('password'),
-        //     'role' => 'estimator',
-        // ]);
+        User::create([
+            'name' => 'Estimator',
+            'email' => 'estimator@bengkel.com',
+            'password' => bcrypt('password'),
+            'role' => 'estimator',
+        ]);
 
         // Billing user
-        // User::create([
-        //     'name' => 'Billing',
-        //     'email' => 'billing@bengkel.com',
-        //     'password' => bcrypt('password'),
-        //     'role' => 'billing',
-        // ]);
+        User::create([
+            'name' => 'Billing',
+            'email' => 'billing@bengkel.com',
+            'password' => bcrypt('password'),
+            'role' => 'billing',
+        ]);
     }
 }

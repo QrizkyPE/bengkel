@@ -48,7 +48,7 @@
                                     </button>
                                 </form>
                                 <button type="button" class="btn btn-danger reject-btn" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $estimation->id }}">
-                                    <i class="fas fa-times"></i> Tolak
+                                    <i class="fas fa-edit"></i> Edit Work Order
                                 </button>
                             @endif
                         </div>
@@ -118,29 +118,23 @@
                 </div>
             </div>
         </div>
-
-        <!-- Reject Modal for each estimation -->
+        <!-- Edit Work Order Modal for each estimation -->
         <div class="modal fade" id="rejectModal{{ $estimation->id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ $estimation->id }}" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form action="{{ url('/estimator/estimations/'.$estimation->id.'/reject') }}" method="POST">
+                    <form action="{{ route('work.orders.resubmit') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="work_order_id" value="{{ $estimation->workOrder->id }}">
                         <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title" id="rejectModalLabel{{ $estimation->id }}">Tolak Estimasi #{{ $estimation->workOrder->no_spk }}</h5>
+                            <h5 class="modal-title" id="rejectModalLabel{{ $estimation->id }}">Edit Work Order #{{ $estimation->workOrder->no_spk }}</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="form-group">
-                                <label for="notes{{ $estimation->id }}" class="form-label">Alasan Penolakan <span class="text-danger">*</span></label>
-                                <textarea name="notes" id="notes{{ $estimation->id }}" class="form-control" rows="4" required></textarea>
-                                <div class="form-text text-muted">
-                                    Berikan alasan mengapa estimasi ini ditolak. Informasi ini akan ditampilkan kepada user service.
-                                </div>
-                            </div>
+                            <p>Apakah anda yakin ingin mengedit Work Order?</p>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-danger">Tolak Estimasi</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
+                            <button type="submit" class="btn btn-danger">Ya</button>
                         </div>
                     </form>
                 </div>
@@ -148,7 +142,7 @@
         </div>
     @empty
         <div class="alert alert-info">
-            Belum ada estimasi yang diajukan.
+            Belum ada work order yang dipindahkan ke halaman Estimasi.
         </div>
     @endforelse
 </div>
@@ -246,35 +240,6 @@
                 } else {
                     // If all fields are filled, submit the form
                     document.querySelector(`.approve-form[data-estimation-id="${estimationId}"]`).submit();
-                }
-            });
-        });
-        
-        // Add validation for reject modal forms
-        document.querySelectorAll('[id^="rejectModal"]').forEach(modal => {
-            const form = modal.querySelector('form');
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const textarea = form.querySelector('textarea');
-            
-            submitBtn.addEventListener('click', function(e) {
-                if (!textarea.value.trim()) {
-                    e.preventDefault();
-                    textarea.classList.add('is-invalid');
-                    
-                    // Add invalid feedback if it doesn't exist
-                    if (!form.querySelector('.invalid-feedback')) {
-                        const feedback = document.createElement('div');
-                        feedback.className = 'invalid-feedback';
-                        feedback.textContent = 'Alasan penolakan wajib diisi';
-                        textarea.parentNode.appendChild(feedback);
-                    }
-                }
-            });
-            
-            // Remove invalid class when user starts typing
-            textarea.addEventListener('input', function() {
-                if (this.value.trim()) {
-                    this.classList.remove('is-invalid');
                 }
             });
         });

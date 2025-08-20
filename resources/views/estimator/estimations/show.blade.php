@@ -81,23 +81,30 @@
                                     </form>
                                 </div>
                                 <div class="col-md-6">
-                                    <form action="{{ route('estimations.reject', $estimation->id) }}" method="POST" id="rejectForm">
+                                    <form action="{{ route('work.orders.resubmit') }}" method="POST" id="rejectForm">
                                         @csrf
-                                        <div class="form-group mb-3">
-                                            <label for="reject_notes">Catatan <span class="text-danger">*</span></label>
-                                            <textarea name="notes" id="reject_notes" class="form-control @error('notes') is-invalid @enderror" rows="3" required></textarea>
-                                            <div class="invalid-feedback" id="notesError">
-                                                Catatan wajib diisi saat menolak estimasi. Berikan alasan penolakan.
-                                            </div>
-                                            @error('notes')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                        <button type="button" id="rejectButton" class="btn btn-danger">
-                                            <i class="fas fa-times"></i> Tolak Estimasi
+                                        <input type="hidden" name="work_order_id" value="{{ $estimation->workOrder->id }}">
+                                        <button type="button" id="rejectButton" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectConfirmModal">
+                                            <i class="fas fa-times"></i> Edit Work Order
                                         </button>
+                                        <!-- Confirmation Modal -->
+                                        <div class="modal fade" id="rejectConfirmModal" tabindex="-1" aria-labelledby="rejectConfirmModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-danger text-white">
+                                                        <h5 class="modal-title" id="rejectConfirmModalLabel">Konfirmasi Pengeditan</h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Apakah anda yakin ingin mengedit work order?</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
+                                                        <button type="submit" class="btn btn-danger">Ya</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -147,23 +154,25 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Client-side validation for reject form
         const rejectButton = document.getElementById('rejectButton');
-        if (rejectButton) {
-            rejectButton.addEventListener('click', function() {
-                const rejectNotes = document.getElementById('reject_notes');
-                const notesError = document.getElementById('notesError');
-                
-                if (!rejectNotes.value.trim()) {
-                    rejectNotes.classList.add('is-invalid');
+        const rejectForm = document.getElementById('rejectForm');
+        const notes = document.getElementById('reject_notes');
+        const notesError = document.getElementById('notesError');
+        if (rejectButton && rejectForm && notes) {
+            rejectButton.addEventListener('click', function(e) {
+                if (!notes.value.trim()) {
+                    e.preventDefault();
+                    notes.classList.add('is-invalid');
                     notesError.style.display = 'block';
                 } else {
-                    document.getElementById('rejectForm').submit();
+                    notes.classList.remove('is-invalid');
+                    notesError.style.display = 'none';
+                    rejectForm.submit();
                 }
             });
-            
-            // Remove error when user starts typing
-            document.getElementById('reject_notes').addEventListener('input', function() {
+            notes.addEventListener('input', function() {
                 if (this.value.trim()) {
                     this.classList.remove('is-invalid');
+                    notesError.style.display = 'none';
                 }
             });
         }

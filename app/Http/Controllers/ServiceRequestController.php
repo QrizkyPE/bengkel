@@ -210,7 +210,7 @@ class ServiceRequestController extends Controller
         }
 
         return redirect()->route('requests.index')
-            ->with('success', 'Estimasi berhasil diajukan dan menunggu persetujuan dari estimator.');
+            ->with('success', 'Estimasi berhasil pindahkan ke halaman Estimasi');
     }
 
     public function submitToEstimator(Request $request)
@@ -255,9 +255,9 @@ class ServiceRequestController extends Controller
                     'total' => 0,
                 ]);
             }
-
-            return back()->with('success', 'Work Order berhasil diajukan ke Estimator');
-
+            
+            return back()->with('success', 'Work Order berhasil dipindahkan ke halaman Estimasi');
+            
         } catch (\Exception $e) {
             \Log::error('Submit to Estimator failed:', [
                 'message' => $e->getMessage(),
@@ -301,35 +301,22 @@ class ServiceRequestController extends Controller
     public function resubmitWorkOrder(Request $request)
     {
         $workOrderId = $request->input('work_order_id');
-
         if (!$workOrderId) {
-            return redirect()->route('work.orders.history')
+            return redirect()->route('requests.index')
                 ->with('error', 'Work Order ID is required');
         }
-
         // Find the work order
         $workOrder = WorkOrder::findOrFail($workOrderId);
-
         // Check if the work order belongs to the current user
         if ($workOrder->user_id !== auth()->id()) {
-            return redirect()->route('work.orders.history')
+            return redirect()->route('requests.index')
                 ->with('error', 'Unauthorized action');
         }
-
-        // Find the rejected estimation
-        $estimation = Estimation::where('work_order_id', $workOrderId)
-            ->where('status', 'rejected')
-            ->first();
-
-        if (!$estimation) {
-            return redirect()->route('work.orders.history')
-                ->with('error', 'No rejected estimation found for this work order');
-        }
-
-        // Delete the rejected estimation to reset the status
-        $estimation->delete();
-
+        // Delete ALL estimations for this work order (not just rejected ones)
+        // This will reset the work order back to "Not Sent" status
+        Estimation::where('work_order_id', $workOrderId)->delete();
+        // Always allow resubmission, even if no rejected estimation exists
         return redirect()->route('requests.index')
-            ->with('success', 'Work order telah direset dan siap untuk diedit kembali. Perhatikan catatan penolakan sebelumnya untuk perbaikan.');
+            ->with('success', 'Work order telah direset dan siap untuk diedit kembali.');
     }
 }
