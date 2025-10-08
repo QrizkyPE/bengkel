@@ -4,6 +4,13 @@
     <meta charset="utf-8">
     <title>Estimasi</title>
     <style>
+        @font-face {
+            font-family: 'STHupo';
+            src: url("{{ public_path('fonts/chinese.sthupo.ttf') }}") format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -34,8 +41,9 @@
             padding-left: 20px;
         }
         .company-name {
+            font-family: 'STHupo', sans-serif !important;
             font-size: 26px;
-            font-weight: bold;
+            /* font-weight: bold; */
             margin-bottom: 5px;
             color: #be0602;
         }

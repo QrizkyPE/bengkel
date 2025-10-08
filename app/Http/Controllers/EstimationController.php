@@ -20,15 +20,15 @@ class EstimationController extends Controller
                 'workOrder',
                 'creator'
             ])
-            ->where('status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->get();
+                ->where('status', 'pending')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
             return view('estimator.estimations.index', compact('estimations'));
         } catch (\Exception $e) {
             // Log the error
             \Log::error('Estimation Index Error: ' . $e->getMessage());
-            
+
             // Return with error message
             return back()->with('error', 'An error occurred while loading estimations: ' . $e->getMessage());
         }
@@ -37,19 +37,19 @@ class EstimationController extends Controller
     public function create(Request $request)
     {
         $workOrderId = $request->input('work_order_id');
-        
+
         if (!$workOrderId) {
             return redirect()->route('requests.index')
                 ->with('error', 'Work Order ID is required');
         }
-        
+
         $workOrder = WorkOrder::with('serviceRequests')->findOrFail($workOrderId);
-        
+
         if ($workOrder->serviceRequests->isEmpty()) {
             return redirect()->route('requests.index')
                 ->with('error', 'Work Order belum ada permintaan sparepart');
         }
-        
+
         return view('estimator.estimations.create', compact('workOrder'));
     }
 
@@ -64,7 +64,7 @@ class EstimationController extends Controller
             'discount.*' => 'nullable|numeric|min:0|max:100',
             'service_request_id.*' => 'required|exists:service_requests,id',
         ]);
-        
+
         // Create the estimation
         $estimation = Estimation::create([
             'work_order_id' => $validatedData['work_order_id'],
@@ -73,18 +73,18 @@ class EstimationController extends Controller
             'status' => 'pending',
             'created_by' => Auth::id(),
         ]);
-        
+
         // Create the estimation items
         $serviceRequestIds = $request->input('service_request_id');
         $partNumbers = $request->input('part_number');
         $prices = $request->input('price');
         $discounts = $request->input('discount');
-        
+
         foreach ($serviceRequestIds as $index => $serviceRequestId) {
             $price = $prices[$index] ?? 0;
             $discount = $discounts[$index] ?? 0;
             $total = $price * (1 - $discount / 100);
-            
+
             EstimationItem::create([
                 'estimation_id' => $estimation->id,
                 'service_request_id' => $serviceRequestId,
@@ -94,7 +94,7 @@ class EstimationController extends Controller
                 'total' => $total,
             ]);
         }
-        
+
         return redirect()->route('estimations.index')
             ->with('success', 'Estimation created successfully');
     }
@@ -106,10 +106,10 @@ class EstimationController extends Controller
             'estimationItems.serviceRequest',
             'workOrder'
         ]);
-        
+
         // Get the service request directly from the estimation item
         $serviceRequest = $estimation->estimationItems->first()->serviceRequest ?? null;
-        
+
         if (!$serviceRequest) {
             return back()->with('error', 'Request data not found for this estimation.');
         }
@@ -127,7 +127,7 @@ class EstimationController extends Controller
             'estimationItems.serviceRequest',
             'workOrder'
         ]);
-        
+
         return view('estimator.estimations.edit', compact('estimation'));
     }
 
@@ -137,7 +137,7 @@ class EstimationController extends Controller
             return redirect()->route('estimations.index')
                 ->with('error', 'Cannot update an estimation that is not pending');
         }
-        
+
         $validatedData = $request->validate([
             'notes' => 'nullable|string',
             'part_number.*' => 'nullable|string',
@@ -145,19 +145,19 @@ class EstimationController extends Controller
             'discount.*' => 'nullable|numeric|min:0|max:100',
             'estimation_item_id.*' => 'required|exists:estimation_items,id',
         ]);
-        
+
         // Update the estimation
         $estimation->update([
             'service_advisor' => auth()->user()->name,
             'notes' => $validatedData['notes'] ?? null,
         ]);
-        
+
         // Update the estimation items
         $estimationItemIds = $request->input('estimation_item_id');
         $partNumbers = $request->input('part_number');
         $prices = $request->input('price');
         $discounts = $request->input('discount');
-        
+
         // Debug information
         \Log::info('Update Estimation Items', [
             'estimation_id' => $estimation->id,
@@ -165,20 +165,20 @@ class EstimationController extends Controller
             'prices' => $prices,
             'discounts' => $discounts
         ]);
-        
+
         foreach ($estimationItemIds as $index => $estimationItemId) {
             $estimationItem = \App\Models\EstimationItem::find($estimationItemId);
-            
+
             // Convert comma-formatted price to numeric
             $priceStr = $prices[$index] ?? '0';
             $price = (float) str_replace(',', '', $priceStr);
-            
+
             $discount = (float) ($discounts[$index] ?? 0);
-            
+
             // Calculate total based on price, discount, and quantity
             $quantity = $estimationItem->serviceRequest->quantity;
             $total = $price * $quantity * (1 - $discount / 100);
-            
+
             // Debug information
             \Log::info('Updating Item', [
                 'item_id' => $estimationItemId,
@@ -189,7 +189,7 @@ class EstimationController extends Controller
                 'quantity' => $quantity,
                 'total' => $total
             ]);
-            
+
             $estimationItem->update([
                 'part_number' => $partNumbers[$index] ?? null,
                 'price' => $price,
@@ -197,7 +197,7 @@ class EstimationController extends Controller
                 'total' => $total,
             ]);
         }
-        
+
         return redirect()->route('estimations.index')
             ->with('success', 'Estimation updated successfully');
     }
@@ -205,15 +205,15 @@ class EstimationController extends Controller
     public function approve(Request $request, $id)
     {
         $estimation = Estimation::findOrFail($id);
-        
+
         // Optional notes for approval
         $notes = $request->input('notes');
-        
+
         $estimation->status = 'approved';
         $estimation->approved_at = now();
         $estimation->notes = $notes;
         $estimation->save();
-        
+
         return redirect()->route('estimations.history')
             ->with('success', 'Estimasi berhasil disetujui.');
     }
@@ -226,13 +226,13 @@ class EstimationController extends Controller
         ], [
             'notes.required' => 'Catatan wajib diisi saat menolak estimasi. Berikan alasan penolakan.'
         ]);
-        
+
         $estimation = Estimation::findOrFail($id);
         $estimation->status = 'rejected';
         $estimation->approved_at = now(); // We still record when it was processed
         $estimation->notes = $validated['notes'];
         $estimation->save();
-        
+
         return redirect()->route('estimations.index')
             ->with('success', 'Estimasi berhasil ditolak.');
     }
@@ -268,20 +268,20 @@ class EstimationController extends Controller
             'service_user' => $serviceRequest->workOrder->service_user
         ]);
 
-        return $pdf->download('estimation-'.$serviceRequest->id.'.pdf');
+        return $pdf->download('estimation-' . $serviceRequest->id . '.pdf');
     }
 
     public function history()
     {
         $estimations = Estimation::with([
-            'workOrder', 
-            'estimationItems.serviceRequest', 
+            'workOrder',
+            'estimationItems.serviceRequest',
             'creator'
         ])
-        ->whereIn('status', ['approved', 'rejected'])
-        ->orderBy('approved_at', 'desc')
-        ->get();
-        
+            ->whereIn('status', ['approved', 'rejected'])
+            ->orderBy('approved_at', 'desc')
+            ->get();
+
         return view('estimator.estimations.history', compact('estimations'));
     }
 
@@ -290,7 +290,7 @@ class EstimationController extends Controller
         if (auth()->user()->role !== 'estimator') {
             abort(403, 'Unauthorized action.');
         }
-        
+
         return $this->approve($request, $id);
     }
 
@@ -301,14 +301,26 @@ class EstimationController extends Controller
             'workOrder',
             'creator'
         ])->findOrFail($id);
-        
-        $pdf = PDF::loadView('estimator.estimations.estimation-pdf', [
-            'estimation' => $estimation
-        ]);
-        
-        $safeWorkOrderNumber = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $estimation->workOrder->no_spk);
+
+        // ✅ Step 1: Pass options as an array (not Options object)
+        $pdf = PDF::setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'chroot' => public_path(), // allow access to /public
+        ])
+            ->loadView('estimator.estimations.estimation-pdf', [
+                'estimation' => $estimation
+            ]);
+
+        // ✅ Step 2: Sanitize the filename
+        $safeWorkOrderNumber = str_replace(
+            ['/', '\\', ':', '*', '?', '"', '<', '>', '|'],
+            '-',
+            $estimation->workOrder->no_spk
+        );
         $filename = 'Estimasi ' . $safeWorkOrderNumber . '.pdf';
-        
+
+        // ✅ Step 3: Download the PDF
         return $pdf->download($filename);
     }
-} 
+}
