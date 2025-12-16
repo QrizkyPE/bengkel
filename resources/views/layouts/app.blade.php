@@ -426,12 +426,22 @@
                                             <i class="fas fa-users"></i> User Management
                                         </a>
                                     </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.spareparts*') ? 'active' : '' }}" href="{{ route('admin.spareparts.index') }}">
+                                            <i class="fas fa-cog"></i> <span>Stok Sparepart</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ request()->routeIs('admin.barang-masuk*') ? 'active' : '' }}" href="{{ route('admin.barang-masuk.index') }}">
+                                            <i class="fas fa-box-open"></i> <span>Barang Masuk</span>
+                                        </a>
+                                    </li>
                                 @endif
 
                                 @if(auth()->user()->role === 'estimator')
                                     <li class="nav-item">
                                         <a class="nav-link {{ request()->routeIs('requests.index') ? 'active' : '' }}" href="{{ route('requests.index') }}">
-                                            <i class="fas fa-home"></i> Home
+                                            <i class="fas fa-home"></i> Service Request
                                         </a>
                                     </li>
                                     <li class="nav-item">

@@ -141,7 +141,8 @@ class EstimationController extends Controller
         $validatedData = $request->validate([
             'notes' => 'nullable|string',
             'part_number.*' => 'nullable|string',
-            'price.*' => 'required|string',
+            'price.*' => 'nullable|string', // Price is calculated from total
+            'total.*' => 'required|string', // Total is input manually
             'discount.*' => 'nullable|numeric|min:0|max:100',
             'estimation_item_id.*' => 'required|exists:estimation_items,id',
         ]);
@@ -155,40 +156,23 @@ class EstimationController extends Controller
         // Update the estimation items
         $estimationItemIds = $request->input('estimation_item_id');
         $partNumbers = $request->input('part_number');
-        $prices = $request->input('price');
+        $totals = $request->input('total');
         $discounts = $request->input('discount');
-
-        // Debug information
-        \Log::info('Update Estimation Items', [
-            'estimation_id' => $estimation->id,
-            'part_numbers' => $partNumbers,
-            'prices' => $prices,
-            'discounts' => $discounts
-        ]);
 
         foreach ($estimationItemIds as $index => $estimationItemId) {
             $estimationItem = \App\Models\EstimationItem::find($estimationItemId);
 
-            // Convert comma-formatted price to numeric
-            $priceStr = $prices[$index] ?? '0';
-            $price = (float) str_replace(',', '', $priceStr);
+            // Convert formatted total to numeric (remove dots and commas)
+            $totalStr = $totals[$index] ?? '0';
+            $total = (float) str_replace(['.', ','], '', $totalStr);
 
             $discount = (float) ($discounts[$index] ?? 0);
-
-            // Calculate total based on price, discount, and quantity
             $quantity = $estimationItem->serviceRequest->quantity;
-            $total = $price * $quantity * (1 - $discount / 100);
 
-            // Debug information
-            \Log::info('Updating Item', [
-                'item_id' => $estimationItemId,
-                'part_number' => $partNumbers[$index] ?? null,
-                'price_str' => $priceStr,
-                'price_converted' => $price,
-                'discount' => $discount,
-                'quantity' => $quantity,
-                'total' => $total
-            ]);
+            // Calculate price from total and quantity
+            // Harga Satuan = Total / Quantity
+            // Discount tidak mempengaruhi perhitungan harga satuan
+            $price = $quantity > 0 ? $total / $quantity : 0;
 
             $estimationItem->update([
                 'part_number' => $partNumbers[$index] ?? null,

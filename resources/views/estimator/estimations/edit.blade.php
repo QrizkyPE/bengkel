@@ -54,13 +54,13 @@
                                         </td>
                                         <td class="text-center">{{ $item->serviceRequest->quantity }} {{ $item->serviceRequest->satuan }}</td>
                                         <td>
-                                            <input type="text" name="price[]" class="form-control price-input" value="{{ old('price.'.$index, number_format($item->price, 0, '', ',')) }}" required>
+                                            <input type="text" name="price[]" class="form-control price-input" value="{{ old('price.'.$index, number_format($item->price, 0, '', ',')) }}" readonly style="background-color: #e9ecef;">
                                         </td>
                                         <td>
-                                            <input type="number" name="discount[]" class="form-control discount-input" value="{{ old('discount.'.$index, $item->discount) }}" min="0" max="100" step="0.01">
+                                            <input type="number" name="discount[]" class="form-control discount-input" value="{{ old('discount.'.$index, $item->discount) }}" min="0" max="100" step="0.01" data-index="{{ $index }}">
                                         </td>
-                                        <td class="text-end total-display">
-                                            {{ number_format($item->total, 0, ',', '.') }}
+                                        <td>
+                                            <input type="text" name="total[]" class="form-control total-input" value="{{ old('total.'.$index, number_format($item->total, 0, '', ',')) }}" data-index="{{ $index }}" data-quantity="{{ $item->serviceRequest->quantity }}" required>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -68,8 +68,8 @@
                                 <tfoot>
                                     <tr>
                                         <td colspan="6" class="text-end"><strong>Grand Total:</strong></td>
-                                        <td class="text-end grand-total">
-                                            <strong>{{ number_format($estimation->estimationItems->sum('total'), 0, ',', '.') }}</strong>
+                                        <td class="text-end">
+                                            <strong id="grand-total">{{ number_format($estimation->estimationItems->sum('total'), 0, ',', '.') }}</strong>
                                         </td>
                                     </tr>
                                 </tfoot>
@@ -97,105 +97,121 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Function to calculate totals
-        function calculateTotals() {
-            const rows = document.querySelectorAll('tbody tr');
-            let grandTotal = 0;
-            
-            rows.forEach(row => {
-                const priceInput = row.querySelector('.price-input');
-                const discountInput = row.querySelector('.discount-input');
-                const totalDisplay = row.querySelector('.total-display');
-                
-                // Parse price by removing commas
-                const priceStr = priceInput.value.replace(/,/g, '');
-                const price = parseFloat(priceStr) || 0;
-                
-                const discount = parseFloat(discountInput.value) || 0;
-                // Extract quantity from the fourth column (index 3)
-                const quantityText = row.querySelector('td:nth-child(4)').textContent.trim().split(' ')[0];
-                const quantity = parseInt(quantityText) || 1;
-                
-                // Calculate total: price * quantity * (1 - discount/100)
-                const total = price * quantity * (1 - discount / 100);
-                grandTotal += total;
-                
-                // Format with proper decimal places and commas
-                totalDisplay.textContent = formatRupiah(total);
-            });
-            
-            document.querySelector('.grand-total strong').textContent = formatRupiah(grandTotal);
-        }
-        
-        // Format number as Indonesian Rupiah (using commas)
+        // Format number as Indonesian Rupiah (using dots for thousands)
         function formatRupiah(number) {
-            // Format with commas for thousands
             return Math.round(number).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
         
+        // Parse formatted number to float
+        function parseRupiah(value) {
+            return parseFloat(value.toString().replace(/\./g, '').replace(/,/g, '')) || 0;
+        }
+        
         // Format input as Rupiah while typing
-        function formatPriceInput(input) {
-            // Get the caret position
+        function formatTotalInput(input) {
             const caretPos = input.selectionStart;
             const oldLength = input.value.length;
             
-            // Remove all non-digits except commas
-            let value = input.value.replace(/[^\d,]/g, '');
+            // Remove all non-digits except dots and commas
+            let value = input.value.replace(/[^\d.,]/g, '');
             
-            // Remove all commas
-            value = value.replace(/,/g, '');
+            // Remove all dots and commas
+            value = value.replace(/[.,]/g, '');
             
-            // Add commas for thousands
+            // Add dots for thousands
             if (value.length > 0) {
-                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             }
             
             // Update the input value
             input.value = value;
             
-            // Adjust caret position based on added/removed characters
+            // Adjust caret position
             const newLength = input.value.length;
             const caretAdjust = newLength - oldLength;
             input.setSelectionRange(caretPos + caretAdjust, caretPos + caretAdjust);
         }
         
-        // Initialize price inputs with proper formatting
-        document.querySelectorAll('.price-input').forEach(input => {
-            // Add input event for live formatting
+        // Calculate price from total and quantity
+        // Harga Satuan = Total / Quantity
+        // Discount tidak mempengaruhi harga satuan yang ditampilkan
+        // Harga satuan adalah harga per unit dari total yang diinput
+        function calculatePriceFromTotal(totalInput, discountInput, priceInput, quantity) {
+            const total = parseRupiah(totalInput.value);
+            
+            if (total === 0 || quantity === 0) {
+                priceInput.value = '0';
+                return;
+            }
+            
+            // Harga satuan = Total / Quantity
+            // Discount tidak mempengaruhi perhitungan harga satuan
+            const price = total / quantity;
+            
+            priceInput.value = formatRupiah(price);
+        }
+        
+        // Calculate grand total
+        function calculateGrandTotal() {
+            const totalInputs = document.querySelectorAll('.total-input');
+            let grandTotal = 0;
+            
+            totalInputs.forEach(input => {
+                grandTotal += parseRupiah(input.value);
+            });
+            
+            document.getElementById('grand-total').textContent = formatRupiah(grandTotal);
+        }
+        
+        // Initialize total inputs
+        document.querySelectorAll('.total-input').forEach(input => {
+            const index = input.getAttribute('data-index');
+            const quantity = parseInt(input.getAttribute('data-quantity')) || 1;
+            const row = input.closest('tr');
+            const priceInput = row.querySelector('.price-input');
+            const discountInput = row.querySelector('.discount-input');
+            
+            // Format on input
             input.addEventListener('input', function() {
-                formatPriceInput(this);
-                calculateTotals();
+                formatTotalInput(this);
+                calculatePriceFromTotal(this, discountInput, priceInput, quantity);
+                calculateGrandTotal();
             });
             
-            // Handle focus to ensure proper caret position
-            input.addEventListener('focus', function() {
-                if (this.value === '0') {
-                    this.value = '';
-                }
-            });
-            
-            // Handle blur to ensure proper value
+            // Format on blur
             input.addEventListener('blur', function() {
-                if (this.value === '') {
+                if (this.value === '' || this.value === '0') {
                     this.value = '0';
+                    priceInput.value = '0';
                 }
-                calculateTotals();
+                calculateGrandTotal();
             });
         });
         
-        // Add event listeners to discount inputs
+        // Initialize discount inputs
+        // Discount tidak mempengaruhi harga satuan, jadi tidak perlu recalculate
         document.querySelectorAll('.discount-input').forEach(input => {
-            input.addEventListener('input', calculateTotals);
+            // Discount hanya untuk informasi, tidak mempengaruhi harga satuan
+            // Harga satuan hanya berubah saat Total berubah
         });
         
-        // Calculate totals on page load
-        calculateTotals();
+        // Calculate initial prices and grand total
+        document.querySelectorAll('.total-input').forEach(input => {
+            const row = input.closest('tr');
+            const discountInput = row.querySelector('.discount-input');
+            const priceInput = row.querySelector('.price-input');
+            const quantity = parseInt(input.getAttribute('data-quantity')) || 1;
+            
+            calculatePriceFromTotal(input, discountInput, priceInput, quantity);
+        });
+        
+        calculateGrandTotal();
         
         // Add form validation
         document.getElementById('validateAndSubmit').addEventListener('click', function() {
             const form = document.getElementById('editForm');
             const partNumberInputs = form.querySelectorAll('input[name="part_number[]"]');
-            const priceInputs = form.querySelectorAll('input[name="price[]"]');
+            const totalInputs = form.querySelectorAll('input[name="total[]"]');
             let isValid = true;
             let emptyFields = [];
             
@@ -207,12 +223,12 @@
                 }
             });
             
-            // Check prices
-            priceInputs.forEach((input, index) => {
-                const price = input.value.replace(/,/g, '');
-                if (!price || price === '0') {
+            // Check totals
+            totalInputs.forEach((input, index) => {
+                const total = parseRupiah(input.value);
+                if (!total || total === 0) {
                     isValid = false;
-                    emptyFields.push(`Harga Satuan untuk item #${index + 1}`);
+                    emptyFields.push(`Total untuk item #${index + 1}`);
                 }
             });
             
@@ -223,6 +239,31 @@
                 
                 alert(message);
             } else {
+                // Convert formatted values to numeric and create hidden inputs
+                document.querySelectorAll('.total-input').forEach((totalInput, index) => {
+                    const row = totalInput.closest('tr');
+                    const priceInput = row.querySelector('.price-input');
+                    const quantity = parseInt(totalInput.getAttribute('data-quantity')) || 1;
+                    
+                    const total = parseRupiah(totalInput.value);
+                    // Harga satuan = Total / Quantity (tidak mempertimbangkan discount)
+                    const price = quantity > 0 ? total / quantity : 0;
+                    
+                    // Create hidden input for total (numeric value)
+                    const totalHidden = document.createElement('input');
+                    totalHidden.type = 'hidden';
+                    totalHidden.name = `total[${index}]`;
+                    totalHidden.value = total.toString();
+                    totalInput.parentNode.appendChild(totalHidden);
+                    
+                    // Create hidden input for price (calculated value)
+                    const priceHidden = document.createElement('input');
+                    priceHidden.type = 'hidden';
+                    priceHidden.name = `price[${index}]`;
+                    priceHidden.value = Math.round(price).toString();
+                    priceInput.parentNode.appendChild(priceHidden);
+                });
+                
                 // If all fields are filled, submit the form
                 form.submit();
             }

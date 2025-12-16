@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\ServiceRequest;
+use App\Models\Sparepart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\WorkOrder;
 use App\Models\Estimation;
@@ -45,6 +47,7 @@ class ServiceRequestController extends Controller
     {
         $validatedData = $request->validate([
             'sparepart_name' => 'required|string',
+            'sparepart_id' => 'nullable|exists:spareparts,id',
             'quantity' => 'required|integer|min:1',
             'satuan' => 'required|string',
             'kebutuhan_part' => 'nullable|string',
@@ -54,11 +57,36 @@ class ServiceRequestController extends Controller
 
         $validatedData['user_id'] = auth()->id();
 
-        // Create the service request
-        ServiceRequest::create($validatedData);
+        DB::beginTransaction();
+        try {
+            // Create the service request
+            $serviceRequest = ServiceRequest::create($validatedData);
 
-        return redirect()->route('requests.index')
-            ->with('success', 'Permintaan sparepart berhasil dibuat.');
+            // Decrease sparepart stock if sparepart_id is provided
+            if ($request->filled('sparepart_id')) {
+                $sparepart = Sparepart::findOrFail($request->sparepart_id);
+                
+                // Check if stock is sufficient
+                if ($sparepart->jumlah < $validatedData['quantity']) {
+                    DB::rollBack();
+                    return back()->with('error', 'Stok sparepart tidak mencukupi. Stok tersedia: ' . $sparepart->jumlah . ' ' . $sparepart->satuan)
+                        ->withInput();
+                }
+
+                // Decrease stock
+                $sparepart->jumlah -= $validatedData['quantity'];
+                $sparepart->save();
+            }
+
+            DB::commit();
+
+            return redirect()->route('requests.index')
+                ->with('success', 'Permintaan sparepart berhasil dibuat.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Service Request Store Error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+        }
     }
 
     public function show(ServiceRequest $request)
@@ -68,7 +96,7 @@ class ServiceRequestController extends Controller
 
     public function edit($id)
     {
-        $request = ServiceRequest::findOrFail($id);
+        $request = ServiceRequest::with('sparepart')->findOrFail($id);
         return view('requests.edit', compact('request'));
     }
 
@@ -78,16 +106,83 @@ class ServiceRequestController extends Controller
 
         $validatedData = $request->validate([
             'sparepart_name' => 'required|string',
+            'sparepart_id' => 'nullable|exists:spareparts,id',
             'quantity' => 'required|integer|min:1',
             'satuan' => 'required|string',
             'kebutuhan_part' => 'nullable|string',
             'keterangan' => 'nullable|string',
         ]);
 
-        $serviceRequest->update($validatedData);
+        DB::beginTransaction();
+        try {
+            $oldSparepartId = $serviceRequest->sparepart_id;
+            $oldQuantity = $serviceRequest->quantity;
+            $newSparepartId = $request->filled('sparepart_id') ? $request->sparepart_id : null;
+            $newQuantity = $validatedData['quantity'];
 
-        return redirect()->route('requests.index')
-            ->with('success', 'Permintaan sparepart berhasil diperbarui.');
+            // Handle stock changes
+            if ($oldSparepartId == $newSparepartId && $oldSparepartId) {
+                // Same sparepart, just quantity changed
+                $sparepart = Sparepart::findOrFail($oldSparepartId);
+                
+                // Calculate the difference
+                $quantityDiff = $newQuantity - $oldQuantity;
+                
+                if ($quantityDiff > 0) {
+                    // Quantity increased, need to check stock and decrease
+                    if ($sparepart->jumlah < $quantityDiff) {
+                        DB::rollBack();
+                        return back()->with('error', 'Stok sparepart tidak mencukupi. Stok tersedia: ' . $sparepart->jumlah . ' ' . $sparepart->satuan . '. Perlu tambahan: ' . $quantityDiff)
+                            ->withInput();
+                    }
+                    $sparepart->jumlah -= $quantityDiff;
+                } else if ($quantityDiff < 0) {
+                    // Quantity decreased, restore the difference
+                    $sparepart->jumlah += abs($quantityDiff);
+                }
+                // If quantityDiff == 0, no change needed
+                
+                $sparepart->save();
+            } else {
+                // Different sparepart or sparepart_id changed
+                // Restore old sparepart stock
+                if ($oldSparepartId) {
+                    $oldSparepart = Sparepart::find($oldSparepartId);
+                    if ($oldSparepart) {
+                        $oldSparepart->jumlah += $oldQuantity;
+                        $oldSparepart->save();
+                    }
+                }
+
+                // Decrease new sparepart stock
+                if ($newSparepartId) {
+                    $newSparepart = Sparepart::findOrFail($newSparepartId);
+                    
+                    // Check if stock is sufficient
+                    if ($newSparepart->jumlah < $newQuantity) {
+                        DB::rollBack();
+                        return back()->with('error', 'Stok sparepart tidak mencukupi. Stok tersedia: ' . $newSparepart->jumlah . ' ' . $newSparepart->satuan)
+                            ->withInput();
+                    }
+
+                    // Decrease stock
+                    $newSparepart->jumlah -= $newQuantity;
+                    $newSparepart->save();
+                }
+            }
+
+            // Update the service request
+            $serviceRequest->update($validatedData);
+
+            DB::commit();
+
+            return redirect()->route('requests.index')
+                ->with('success', 'Permintaan sparepart berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Service Request Update Error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+        }
     }
 
     public function destroy(ServiceRequest $request)

@@ -15,6 +15,7 @@ class ServiceRequest extends Model
         'user_id',
         'work_order_id',
         'sparepart_name',
+        'sparepart_id',
         'quantity',
         'satuan',
         'kebutuhan_part',
@@ -47,6 +48,11 @@ class ServiceRequest extends Model
     public function estimationItems()
     {
         return $this->hasMany(EstimationItem::class);
+    }
+
+    public function sparepart()
+    {
+        return $this->belongsTo(Sparepart::class);
     }
 
     // public $timestamps = true;

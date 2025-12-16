@@ -173,7 +173,77 @@ Route::group(['middleware' => 'auth'], function() {
             }
             return app()->make('App\Http\Controllers\AdminController')->generateEstimationPDF($id);
         })->name('admin.estimations.pdf');
+
+        // Sparepart routes
+        Route::get('/spareparts', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\Admin\SparepartController')->index();
+        })->name('admin.spareparts.index');
+
+        Route::get('/spareparts/create', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\Admin\SparepartController')->create();
+        })->name('admin.spareparts.create');
+
+        Route::post('/spareparts', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\Admin\SparepartController')->store(request());
+        })->name('admin.spareparts.store');
+
+        Route::get('/spareparts/{id}/edit', function($id) {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\Admin\SparepartController')->edit($id);
+        })->name('admin.spareparts.edit');
+
+        Route::put('/spareparts/{id}', function($id) {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\Admin\SparepartController')->update(request(), $id);
+        })->name('admin.spareparts.update');
+
+        Route::delete('/spareparts/{id}', function($id) {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\Admin\SparepartController')->destroy($id);
+        })->name('admin.spareparts.destroy');
+
+        // Barang Masuk routes
+        Route::get('/barang-masuk', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\Admin\BarangMasukController')->index();
+        })->name('admin.barang-masuk.index');
+
+        Route::post('/barang-masuk', function() {
+            if (auth()->user()->role !== 'admin') {
+                abort(403, 'Unauthorized action.');
+            }
+            return app()->make('App\Http\Controllers\Admin\BarangMasukController')->store(request());
+        })->name('admin.barang-masuk.store');
     });
+
+    // API endpoint for sparepart autocomplete (accessible by authenticated users)
+    Route::get('/api/spareparts/search', function() {
+        $query = request('q');
+        if (!$query) {
+            return response()->json([]);
+        }
+        $spareparts = \App\Models\Sparepart::where('nama', 'like', '%' . $query . '%')
+            ->limit(10)
+            ->get(['id', 'nama', 'jumlah', 'satuan']);
+        return response()->json($spareparts);
+    })->name('admin.spareparts.search');
     
     // Estimator routes
     Route::group(['middleware' => 'auth', 'prefix' => 'estimator'], function() {
