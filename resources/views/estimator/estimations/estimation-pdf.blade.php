@@ -176,12 +176,18 @@
         </h3>
         <h3 style="text-align: left; font-size: 12px; margin-top: 0; margin-bottom: 1px; color:#0070c0">PT.Batavia
             Prosperindo Trans,TBK</h3>
-
+            <p style="font-size: 11px; margin: 5px 0; font-weight: normal;">Gedung Chase Plaza,Lantai 12</p>
+                <p style="font-size: 11px; margin: 5px 0; font-weight: normal;">Jl.Jend.Sudirman Kav.21,Karet</p>
+                <p style="font-size: 11px; margin: 5px 0; font-weight: normal;">Setia Budi,Jakarta Selatan,DKI Jakarta 12920</p>
+                <p style="font-size: 11px; margin: 5px 0; font-weight: normal;">Telp&nbsp;&nbsp;&nbsp;&nbsp;:(+62 21) 5319 1717</p>
+                <p style="font-size: 11px; margin: 5px 0; font-weight: normal;">Faks&nbsp;&nbsp;&nbsp;&nbsp;:(+62 21) 5319 1918</p>
+                
 
 
         <div class="info-container">
             <div class="info-left" style="font-weight: bold">
                 <br>
+                
                 <p style="font-size: 11px; margin: 5px 0;">No. Polisi&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
                     {{ $estimation->workOrder->no_polisi ?? '-' }}</p>
                 <p style="font-size: 11px; margin: 5px 0;">Kilometer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
